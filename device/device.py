@@ -133,7 +133,7 @@ def calibration_head(uuid: str):
     if (db.device.get(uuid).calibration == None):
         return make_response("", 404)
     else:
-        return make_response("", 404)
+        return make_response("", 200)
 
 @device.route("<uuid:uuid>/calibration", methods=["PUT"])
 def calibration_put(uuid: str):
