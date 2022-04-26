@@ -24,9 +24,9 @@ def auth():
     """
 
     if session.get("user"):
-        pass
+        return None
     if ("Authorization" in request.headers.keys()) and check_sign(request.headers["Authorization"]):
-        pass
+        return None
     
     data = request.data
     resp_body = {
