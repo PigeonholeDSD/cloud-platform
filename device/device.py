@@ -18,9 +18,9 @@ def auth():
     """
     Global interceptor of device APIs.
 
-    Passed if session or header `Authorization` is invalid.
+    Continue to process the request if either the session or the header `Authorization` is valid.
 
-    Return 401 if both session and header `Authorization` are invalid.
+    Return 401 if both the session and the header `Authorization` are invalid.
     """
 
     if request.method in ["GET", "DELETE", "HEAD"]:
