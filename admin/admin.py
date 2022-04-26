@@ -3,7 +3,7 @@
 
 import os
 from tempfile import mkdtemp
-from time import time
+import time
 from flask import Blueprint, make_response, request, session, jsonify
 import db.admin, db.model
 from utils.utils import APIParser, APIParseError, get_sign
@@ -67,6 +67,7 @@ def model_base_put():
 
 @admin.route("/timestamp")
 def timestamp():
+    data = request.data
     ts = int(time.time())
     resp_body = str(ts) + ":" + get_sign()
     return make_response(resp_body, 200)
