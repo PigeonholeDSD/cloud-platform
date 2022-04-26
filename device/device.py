@@ -23,6 +23,8 @@ def auth():
     Return 401 if both session and header `Authorization` are invalid.
     """
 
+    if request.method in ["GET", "DELETE", "HEAD"]:
+        data = request.data
     if session.get("user"):
         return None
     if ("Authorization" in request.headers.keys()) and check_sign(request.headers["Authorization"]):
