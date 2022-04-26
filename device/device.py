@@ -96,12 +96,12 @@ def email_post(uuid: str):
         email = valid.email
         # If length exceeds, EmailNotValidError will be raised.
         if (len(email) > 254):
-            raise EmailNotValidError()
+            raise EmailNotValidError("The email address is too long ({} characters too many).".format(len(email) - 254))
         db.device.get(uuid).email = email
         return make_response("", 200)
-    except EmailNotValidError:
+    except EmailNotValidError as e:
         resp_body = {
-            "error": "Invalid email address"
+            "error": str(e)
         }
         resp_body = jsonify(resp_body)
         return make_response(resp_body, 400)
