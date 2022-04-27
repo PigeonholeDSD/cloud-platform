@@ -152,11 +152,12 @@ def calibration_put(uuid: str):
     file = request.files.get("calibration")
     if file and file.content_type == "application/x-tar+gzip":
         path = mkdtemp()
-        file.save(path)
-        tf = tarfile.open(os.path.join(path, file.name))
+        file.save(os.path.join(path, file.filename))
+        tf = tarfile.open(os.path.join(path, file.filename))
         tf.extractall(path)
         db.device.get(uuid).calibration = path
     else:
+        data = request.data
         resp_body = {
             "error": "Invalid API request",
         }

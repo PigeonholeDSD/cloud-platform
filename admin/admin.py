@@ -50,13 +50,14 @@ def model_base_put():
         }
         resp_body = jsonify(resp_body)
         return make_response(resp_body, 401)
-    data = request.data
     file = request.files.get("model")
     if file:
         path = mkdtemp()
-        file.save(path)
-        db.model.setBase(os.path.join(path, file.name))
+        file.save(os.path.join(path, file.filename))
+        print(os.path.join(path, file.filename))
+        db.model.setBase(os.path.join(path, file.filename))
     else:
+        data = request.data
         resp_body = {
             "error": "Invalid API request",
         }
