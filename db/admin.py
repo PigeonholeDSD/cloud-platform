@@ -15,7 +15,9 @@ def check(username: str, password: str)-> bool:
 
     Returns `True` if the credential is valid, `False` otherwise.
     """
-    return True
+    if (username == "testadmin" and password == "testpwd114514@"):
+        return True
+    return False
 
 def remove(username: str)-> None:
     """

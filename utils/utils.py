@@ -7,7 +7,9 @@ def check_sign(sign: str) -> bool:
     """
     Check the signature of the request.
     """
-    return True
+    if (sign == "ticket"):
+        return True
+    return False
 
 def get_sign() -> str:
     return "6bce5953a9506d6c14f2522fd6228afbee394da3"
