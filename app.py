@@ -15,4 +15,4 @@ app.config["SECRET_KEY"] = secrets.token_urlsafe(24)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0", port=8000)
