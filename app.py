@@ -6,8 +6,10 @@ import secrets
 from datetime import timedelta
 from admin.admin import admin
 from device.device import device
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
 app.register_blueprint(admin)
 app.register_blueprint(device)
 
