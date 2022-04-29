@@ -56,7 +56,7 @@ def email_get(uuid: str):
     Returns 404 if not set, 200 otherwise.
     """
 
-    email = db.device.get(uuid).email
+    email = db.device.get(str(uuid)).email
     # Get the request data of GET, so Flask will not return 400 automatically.
     data = request.data
     if (email):
@@ -99,7 +99,7 @@ def email_post(uuid: str):
         # If length exceeds, EmailNotValidError will be raised.
         if (len(email) > 254):
             raise EmailNotValidError("The email address is too long ({} characters too many).".format(len(email) - 254))
-        db.device.get(uuid).email = email
+        db.device.get(str(uuid)).email = email
         return make_response("", 200)
     except EmailNotValidError as e:
         resp_body = {

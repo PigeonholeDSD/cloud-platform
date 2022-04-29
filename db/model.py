@@ -1,18 +1,9 @@
-# Author: Alex Xu
-# Description: This file is used to provide database function prototype.
+import os
 
-def getBase() -> str:
-    """
-    Get the path of the base model.
+from db.__config import BASE
 
-    Returns an absolute path if set, `None` otherwise.
-    """
-    pass
+def getBase()->str:
+    return BASE
 
-def setBase(path: str) -> None:
-    """
-    Set the path of the base model. Must be an absolute path.
-
-    Returns `None` always.
-    """
-    pass
+def setBase(path:str)->None:
+    os.rename(path,BASE)

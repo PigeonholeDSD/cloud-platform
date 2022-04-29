@@ -1,28 +1,48 @@
-# Author: Alex Xu
-# Description: This file is used to provide database function prototype.
+import sqlite3
 
-def add(username: str, password: str) -> bool:
-    """
-    Add an administrator account with the specified username and password. The strings must be non-empty, and the username must contain only `[A-Za-z0-9_]`.
+from db.__config import ADMIN
 
-    Returns `True` if succeed, `False` if the username existed.
-    """
-    pass
+USERNAME='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'
+PASSWORD='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ '
 
-def check(username: str, password: str)-> bool:
-    """
-    Check if the given credential is a valid administrator account.
+con=sqlite3.connect(ADMIN,check_same_thread=False)
+cur=con.cursor()
+cur.execute('create table if not exists admin(username varchar(64) primary key,email varchar(1024),password varchar(1024))')
+con.commit()
 
-    Returns `True` if the credential is valid, `False` otherwise.
-    """
-    if (username == "testadmin" and password == "testpwd114514@"):
+def add(username:str,password:str)->bool:
+    cur.execute('select 1 from admin where username=?',(username,))
+    s=cur.fetchone()
+    if s:
+        return False
+
+    if not username:
+        raise ValueError('username is empty')
+    if not password:
+        raise ValueError('password is empty')
+    if len(username)>40:
+        raise ValueError('username is too long')
+    if len(password)>40:
+        raise ValueError('password is too long')
+    if not all(c in USERNAME for c in username):
+        raise ValueError('username contains invalid characters')
+    if not all(c in PASSWORD for c in password):
+        raise ValueError('password contains invalid characters')
+
+    cur.execute('insert into admin(username,email,password) values(?,?,?)',(username,None,password))
+    con.commit()
+    return True
+
+add('testadmin','testpwd114514@')
+
+def check(username:str,password:str)->bool:
+    cur.execute('select password from admin where username=?',(username,))
+    s=cur.fetchone()
+    if not s or s[0]!=password:
+        return False
+    else:
         return True
-    return False
 
-def remove(username: str)-> None:
-    """
-    Removes the administrator with the specified username.
-
-    Returns `None` always.
-    """
-    pass
+def remove(username:str)->None:
+    cur.execute('delete from admin where username=?',(username,))
+    con.commit()

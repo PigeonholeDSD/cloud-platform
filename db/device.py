@@ -1,72 +1,100 @@
-# Author: Alex Xu
-# Description: This file is used to provide database function prototype.
+import os
+import shutil
+import sqlite3
+from uuid import UUID
 
-class Device():
-    """
-    Class Device
-    ```
-    db.device.Device.banned: bool
-    ```
+from db.__config import DEVICE,MODEL,CALIBRATION
+con=sqlite3.connect(DEVICE,check_same_thread=False)
+cur=con.cursor()
+cur.execute('create table if not exists device(uuid varchar(64) primary key,banned boolean,email varchar(1024),model varchar(1024),calibration varchar(1024))')
+con.commit()
 
-    Indicate if the device is banned from the cloud services.
 
-    Defaults to `False`.
+def get(uuid:str,create:bool=True):
+    uuid=str(uuid)
+    UUID(uuid,version=4)
+    cur.execute('select banned,email,model,calibration from device where uuid=?',(uuid,))
+    info=cur.fetchone()
 
-    ```
-    db.device.Device.email: str
-    ```
+    if create and not info:
+        _model=MODEL%uuid
+        _calibration=CALIBRATION%uuid
+        cur.execute('insert into device(uuid,banned,email,model,calibration) values(?,?,?,?,?)',(uuid,False,None,_model,_calibration))
+        con.commit()
+        info=(0,None,_model,_calibration)
+        os.makedirs(_calibration)
 
-    The device's contact email, if exists. Support at least 254 characters, `ValueError` should be raised if exceeded.
+    if info:
+        return Device(uuid)
+    # else:
+    #     return None
 
-    Defaults to `None`.
 
-    ```
-    db.device.Device.model: str
-    ```
+def remove(uuid:str)->None:
+    uuid=str(uuid)
+    UUID(uuid,version=4)
+    cur.execute('delete from device where uuid=?',(uuid,))
+    _dir=os.path.dirname(CALIBRATION%uuid)
+    if os.path.exists(_dir):
+        shutil.rmtree(_dir)
+    con.commit()
 
-    The path of the device's model file, if exists. Must be an absolute path.
 
-    On assignment, it's expected to copy the file specified into the database, rather than just changing the path. When `None` is assigned, delete the model.
+class Device:
+    def __init__(
+        self,
+        uuid:str
+    )->None:
+        self.uuid=uuid
 
-    Defaults to `None`.
+    @property
+    def banned(self)->bool:
+        cur.execute('select banned from device where uuid=?',(self.uuid,))
+        return cur.fetchone()[0]
+    
+    @banned.setter
+    def banned(self,value:bool)->None:
+        cur.execute('update device set banned=? where uuid=?',(value,self.uuid))
+        con.commit()
 
-    ```
+    @property
+    def email(self)->str:
+        cur.execute('select email from device where uuid=?',(self.uuid,))
+        return cur.fetchone()[0]
 
-    db.device.Device.calibration: str
-    ```
+    @email.setter
+    def email(self,value:str)->None:
+        cur.execute('update device set email=? where uuid=?',(value,self.uuid))
+        con.commit()
 
-    The path of the device's calibration data directory, if exists, with some `.csv` motion data files named with the motion recorded. Must be an absolute path.
+    @property
+    def model(self)->str:
+        cur.execute('select model from device where uuid=?',(self.uuid,))
+        s=cur.fetchone()[0]
+        if os.path.exists(s):
+            return s
+        # else:
+        #     return None
 
-    On assignment, it's expected to copy the files in the directory specified into the database, rather than just changing the path. When `None` is assigned, delete the data.
+    @model.setter
+    def model(self,value:str)->None:
+        cur.execute('select model from device where uuid=?',(self.uuid,))
+        s=cur.fetchone()[0]
+        os.rename(value,s)
 
-    Defaults to `None`.
-    """
 
-    def __init__(self) -> None:
-        self.banned: bool = False
-        self.email: str = None
-        self.model: str = None
-        self.calibration: str = None
+    @property
+    def calibration(self)->str:
+        cur.execute('select calibration from device where uuid=?',(self.uuid,))
+        s=cur.fetchone()[0]
+        if os.listdir(s):
+            return s
+        # else:
+        #     return None
 
-def get(uuid: str, create: bool=False) -> Device:
-    """
-    Get the `db.device.Device` object of the device with a specified UUID. The UUID must be a valid UUIDv4.
-
-    If the `create` is set to `True`, the device entry is created and returned if not found.
-
-    Returns a `db.device.Device` instance if the device is found or created, `None` otherwise.
-    """
-    new_device = Device()
-    new_device.banned = False
-    new_device.email = "123@qq.com"
-    new_device.model = "./app.py"
-    new_device.calibration = "/"
-    return new_device
-
-def remove(uuid: str)-> None:
-    """
-    Delete everything about the device with the specified UUID.
-
-    Returns `None` always.
-    """
-    pass
+    @calibration.setter
+    def calibration(self,value:str)->None:
+        cur.execute('select calibration from device where uuid=?',(self.uuid,))
+        s=cur.fetchone()[0]
+        shutil.rmtree(s)
+        os.rename(value,s)
