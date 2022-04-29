@@ -1,18 +1,27 @@
-# Author: Alex Xu
-# Description: This file is the main entry of cloud platform.
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-from flask import Flask
+import os
 import secrets
 from datetime import timedelta
-from admin.admin import admin
-from device.device import device
+from flask import Flask
+import error
+import admin
+import crypto
+import device
+from util import *
 
 app = Flask(__name__)
-app.register_blueprint(admin)
-app.register_blueprint(device)
-
-app.config["SECRET_KEY"] = secrets.token_urlsafe(24)
+app.config['SECRET_KEY'] = os.environ.get('DSD_SECRET', secrets.token_hex(32))
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
+app.config['TICKET_LIFETIME'] = 60*60
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+app.register_blueprint(admin.bp)
+app.register_blueprint(device.bp)
+app.register_error_handler(error.APISyntaxError, error.APISyntaxError.handler)
+app.register_error_handler(error.NotLoggedIn, error.NotLoggedIn.handler)
+app.register_error_handler(error.Forbidden, error.Forbidden.handler)
+app.add_url_rule('/timestamp', view_func=crypto.timestamp)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000)
