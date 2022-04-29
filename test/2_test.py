@@ -1,10 +1,13 @@
-#!/usr/bin/env python
-# -*- coding:utf8 -*-
-# @TIME    : 2021/08/22 20:30
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# @Time    : 2022/04/29 19:29
 # @Author  : Xiaoquan Xu
-# @File    : qubit_operator_unit_test.py
+# @File    : 2_test.py
 
+import time
 import pytest
+import requests
+from names import *
 
 def err(x):
     assert 0
@@ -16,4 +19,4 @@ def test_answer():
     assert func(3) == 4
 
 if __name__ == "__main__":
-    pytest.main(["./1_test.py"])
+    pytest.main(["./2_test.py"])
