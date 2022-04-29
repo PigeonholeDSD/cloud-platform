@@ -31,7 +31,7 @@ def post_email(uuid: uuid.UUID):
         'email': str,
     })
     if len(data.email) > 254 or \
-            not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', data.email):
+            not re.match(r'^[a-zA-Z0-9_.+-]{1,64}@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', data.email):
         raise error.APISyntaxError('Invalid email')
     db.device.get(uuid).email = data.email
     return '', 200
