@@ -5,7 +5,7 @@ import os
 from tempfile import mkdtemp
 import time
 from flask import Blueprint, make_response, request, session, jsonify
-import db.admin, db.model
+import db.admin, db.model, db.device
 from utils.utils import APIParser, APIParseError, get_sign
 
 admin = Blueprint("admin", __name__)
@@ -72,3 +72,15 @@ def timestamp():
     ts = int(time.time())
     resp_body = str(ts) + ":" + get_sign()
     return make_response(resp_body, 200)
+
+@admin.route("/device/<uuid:uuid>", methods=["DELETE"])
+def root_delete(uuid):
+    data = request.data
+    if not session.get("user"):
+        resp_body = {
+            "error": "Authentication required"
+        }
+        resp_body = jsonify(resp_body)
+        return make_response(resp_body, 401)
+    db.device.remove(uuid)
+    return make_response("", 200)
