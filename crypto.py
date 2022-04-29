@@ -6,8 +6,8 @@ from flask import current_app
 import error
 
 
-def timestamp(_time: int = time.time()) -> str:
-    t = str(int(_time))
+def timestamp(_time: int=0) -> str:
+    t = str(int(_time if _time else time.time()))
     sign = hmac.new(current_app.config['SECRET_KEY'].encode(
     ), t.encode(), hashlib.sha1).hexdigest()
     return t+':'+sign
