@@ -23,6 +23,7 @@ def test_response_status_code():
     body_email = {"email": "t@t.tt"}
     url = generate_url()
     res = s.post(url, json=body_email)
+    print(url)
     assert res.status_code == 200
     
 def test_response_status_code2():

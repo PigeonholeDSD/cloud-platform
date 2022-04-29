@@ -27,11 +27,11 @@ def test_bad_request():
     assert res.status_code == 400
 
 def test_wrong_username_password():
-    wrong_body1 = {"username": "UserName","password": "wrong"}
+    wrong_body1 = {"username": "UserName", "password": "wrong"}
     res = requests.post(API_BASE + "/session", json=wrong_body1)
     assert res.status_code == 401
 
-    wrong_body1 = {"username": "Userser","password": "wrongrong"}
+    wrong_body1 = {"username": "Userser", "password": "wrongrong"}
     res = requests.post(API_BASE + "/session", json=wrong_body1)
     assert res.status_code == 401
 
