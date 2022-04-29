@@ -4,7 +4,6 @@
 # @Author  : Xiaoquan Xu
 # @File    : 15_test.py
 
-import json
 import pytest
 import requests
 from names import *
