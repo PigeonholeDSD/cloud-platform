@@ -75,7 +75,7 @@ def get_calibration(uuid: uuid.UUID):
 def put_calibration(uuid: uuid.UUID):
     logged_in(uuid)
     file = request.files.get('calibration')
-    if file and file.content_type != 'application/x-tar+gzip':
+    if not file or file.content_type != 'application/x-tar+gzip':
         raise error.APISyntaxError(
             'The request must be of type application/json')
     path = mkdtemp()
