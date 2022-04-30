@@ -16,18 +16,21 @@ def generate_url():
 def log_in_session() -> requests.Session:
     s = requests.Session()
     body = {"username": USERNAME, "password": PASSWORD}
+    
     s.post(API_BASE + "/session", json=body)
     return s
 
 def set_email(body_email):
     s = log_in_session()
     url = generate_url()
+    
     s.post(url, json=body_email)
     return s, url
 
 def test_good_clear_email():
     body_email = {"email": "pigeonhole@ciel.dev"}
     s, url = set_email(body_email)
+    
     res = s.get(url)
     assert json.loads(res.text) == body_email
     
@@ -42,6 +45,11 @@ def test_good_clear_email():
 def test_no_email_before_clear():
     s = log_in_session()
     url = generate_url()
+    
+    res = s.get(url)
+    assert res.status_code == 404
+    assert res.text == ""
+    
     res = s.delete(url)
     assert res.status_code == 200
     assert res.text == ""
@@ -49,6 +57,7 @@ def test_no_email_before_clear():
 def test_delete_again():
     body_email = {"email": "pigeonholeno@ciel.dev"}
     s, url = set_email(body_email)
+    
     res = s.get(url)
     assert json.loads(res.text) == body_email
     

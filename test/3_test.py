@@ -28,6 +28,7 @@ def set_email(body_email):
 def test_good_get_email():
     body_email = {"email": "pigeonhole@ciel.dev"}
     s, url = set_email(body_email)
+    
     res = s.get(url)
     assert res.status_code == 200
     print(res.text)
@@ -45,6 +46,7 @@ def test_set_again():
     
     body_email = {"email": "pigeonholee2@ciel.dev"}
     assert json.loads(res.text) != body_email
+    
     s.post(url, json=body_email)
     res = s.get(url)
     assert res.status_code == 200
@@ -69,6 +71,7 @@ def test_set_again_not_same_session():
     res = s.get(url)
     assert res.status_code == 200
     assert json.loads(res.text) == body_email2
+    
     res2 = s2.get(url)
     assert res2.status_code == 200
     assert json.loads(res2.text) == body_email2
@@ -89,12 +92,14 @@ def test_not_same_session():
 def test_no_email_set_before():
     s = log_in_session()
     url = generate_url()
+    
     res = s.get(url)
     assert res.status_code == 404
 
 def test_bad_email():
     body_email = {"email": "pigeonhole@cieldev"}
     s, url = set_email(body_email)
+    
     res = s.get(url)
     assert res.status_code == 404
     assert res.text == ""
