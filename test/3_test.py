@@ -25,7 +25,7 @@ def set_email(body_email):
     s.post(url, json=body_email)
     return s, url
 
-def test_response_status_code():
+def test_good_get_email():
     body_email = {"email": "pigeonhole@ciel.dev"}
     s, url = set_email(body_email)
     res = s.get(url)
@@ -35,7 +35,7 @@ def test_response_status_code():
     assert json.loads(res.text) == body_email
     
 def test_set_again():
-    body_email = {"email": "pigeonhole@ciel.dev"}
+    body_email = {"email": "pigeonholee@ciel.dev"}
     s, url = set_email(body_email)
     res = s.get(url)
     assert res.status_code == 200
@@ -43,7 +43,7 @@ def test_set_again():
     print(body_email)
     assert json.loads(res.text) == body_email
     
-    body_email = {"email": "pigeonhole2@ciel.dev"}
+    body_email = {"email": "pigeonholee2@ciel.dev"}
     assert json.loads(res.text) != body_email
     s.post(url, json=body_email)
     res = s.get(url)
@@ -51,6 +51,40 @@ def test_set_again():
     print(res.text)
     print(body_email)
     assert json.loads(res.text) == body_email
+
+def test_set_again_not_same_session():
+    body_email = {"email": "pigeonholee@ciel.dev"}
+    s, url = set_email(body_email)
+    res = s.get(url)
+    assert res.status_code == 200
+    print(res.text)
+    print(body_email)
+    assert json.loads(res.text) == body_email
+    
+    body_email2 = {"email": "pigeonholee2@ciel.dev"}
+    assert body_email != body_email2
+    s2 = log_in_session()
+    s2.post(url, json=body_email2)
+    
+    res = s.get(url)
+    assert res.status_code == 200
+    assert json.loads(res.text) == body_email2
+    res2 = s2.get(url)
+    assert res2.status_code == 200
+    assert json.loads(res2.text) == body_email2
+
+def test_not_same_session():
+    body_email = {"email": "pigeon@ciel.dev"}
+    s, url = set_email(body_email)
+    res = s.get(url)
+    assert res.status_code == 200
+    assert json.loads(res.text) == body_email
+    
+    s2 = log_in_session()
+    res2 = s2.get(url)
+    print(res2.content)
+    print(res.content)
+    assert res2.content == res.content
 
 def test_no_email_set_before():
     s = log_in_session()
