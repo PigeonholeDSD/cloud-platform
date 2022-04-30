@@ -18,8 +18,10 @@ def create_session():
         'password': str,
     })
     if db.admin.check(data.username, data.password):
-        session['user'] = data.username
-        session['pass'] = data.password
+        session.update({
+            'user': data.username,
+            'pass': data.password,
+        })
         return '', 200
     else:
         raise error.Forbidden('Login failed')

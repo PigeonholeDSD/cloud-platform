@@ -16,10 +16,12 @@ from util import *
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('DSD_SECRET', secrets.token_hex(32))
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
-app.config['TICKET_LIFETIME'] = 60*60
-app.config['CLOUD_KEY'] = crypto.cloud_key()
+app.config.update({
+    'SECRET_KEY': secrets.token_hex(32),
+    'PERMANENT_SESSION_LIFETIME': timedelta(hours=2),
+    'TICKET_LIFETIME': 60*60,
+    'CLOUD_KEY': crypto.cloud_key(),
+})
 
 app.register_blueprint(admin.bp)
 app.register_blueprint(device.bp)
