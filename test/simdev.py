@@ -6,7 +6,7 @@ import hashlib
 from nacl.encoding import HexEncoder
 from nacl.signing import SigningKey, VerifyKey
 
-keydir = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), '..')
+keydir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 with open(os.path.join(keydir, 'cloud.key'), 'rb') as f:
     cloud_key = SigningKey(f.read())
 with open(os.path.join(keydir, 'cloud.pub'), 'rb') as f:
