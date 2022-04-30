@@ -99,10 +99,10 @@ def check_file(file: str, sig: str, uuid: uuid.UUID) -> None:
         sig, pubkey, cert = sig.split(':')
         hash = hash_file(file)
         if not verify(hash, sig, pubkey):
-            raise error.APISyntaxError('Invalid file signautre')
+            raise error.SignatureError('Invalid file signautre')
         if not verify(pubkey+str(uuid), cert):
-            raise error.APISyntaxError('Invalid file pubkey')
+            raise error.SignatureError('Invalid file pubkey')
     except error.DSDException as e:
         raise e
     except Exception:
-        raise error.APISyntaxError('Invalid signature')
+        raise error.SignatureError('Invalid signature')

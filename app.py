@@ -26,6 +26,7 @@ app.register_blueprint(device.bp)
 app.register_error_handler(error.APISyntaxError, error.APISyntaxError.handler)
 app.register_error_handler(error.NotLoggedIn, error.NotLoggedIn.handler)
 app.register_error_handler(error.Forbidden, error.Forbidden.handler)
+app.register_error_handler(error.SignatureError, error.SignatureError.handler)
 app.add_url_rule('/timestamp', view_func=crypto.timestamp)
 
 if __name__ == '__main__':
