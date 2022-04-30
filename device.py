@@ -6,6 +6,7 @@ import tarfile
 from tempfile import mkdtemp
 from flask import Blueprint, after_this_request, make_response, request, jsonify, send_file
 import error
+import train
 from util import *
 import db.device
 import db.model
@@ -85,6 +86,7 @@ def put_calibration(uuid: uuid.UUID):
         tf = tarfile.open(filename)
         tf.extractall(path)
         db.device.get(uuid).calibration = path
+        train.train(db.device.get(uuid))
     finally:
         shutil.rmtree(path)
     return '', 200
