@@ -4,12 +4,15 @@
 # @Author  : Xiaoquan Xu
 # @File    : 11_test.py
 
+import os, sys
 import json
 import uuid
 import pytest
 import requests
 from names import *
 from simdev import SimDevice
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def generate_url():
     return API_BASE + "/device/" + str(uuid.uuid4()) + "/calibration"
