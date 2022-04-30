@@ -1,7 +1,9 @@
 from flask import jsonify
 
+class DSDException(Exception):
+    pass
 
-class APISyntaxError(Exception):
+class APISyntaxError(DSDException):
     @staticmethod
     def handler(e):
         return jsonify({
@@ -9,7 +11,7 @@ class APISyntaxError(Exception):
         }), 400
 
 
-class NotLoggedIn(Exception):
+class NotLoggedIn(DSDException):
     @staticmethod
     def handler(e):
         return jsonify({
@@ -17,7 +19,7 @@ class NotLoggedIn(Exception):
         }), 401
 
 
-class Forbidden(Exception):
+class Forbidden(DSDException):
     @staticmethod
     def handler(e):
         return jsonify({
@@ -25,7 +27,7 @@ class Forbidden(Exception):
         }), 403
 
 
-class SignatureError(Exception):
+class SignatureError(DSDException):
     @staticmethod
     def handler(e):
         return jsonify({
