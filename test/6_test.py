@@ -19,7 +19,7 @@ def log_in_session() -> requests.Session:
     s.post(API_BASE + "/session", json=body)
     return s
 
-def test_good_check():
+def test_good_upload():
     s = log_in_session()
     url = generate_url()
     files = {"calibration": ("fake.tgz", open("fake.tgz", "rb"),\
@@ -28,7 +28,16 @@ def test_good_check():
     print(res.text)
     assert res.status_code == 200
 
-def test_bad_request_check():
+def test_good_upload2():
+    s = log_in_session()
+    url = generate_url()
+    files = {"calibration": (".", open("fake.tgz", "rb"),\
+        "application/x-tar+gzip", {"Expires": "0"})}
+    res = s.put(url, files=files)
+    print(res.text)
+    assert res.status_code == 200
+
+def test_bad_request():
     s = log_in_session()
     url = generate_url()
     files = {"file": ("fake.tgz", open("fake.tgz", "rb"),\
@@ -36,7 +45,7 @@ def test_bad_request_check():
     res = s.put(url, files=files)
     assert res.status_code == 400
 
-def test_bad_request_check2():
+def test_bad_request2():
     s = log_in_session()
     url = generate_url()
     files = {"calibration": ("fake.csv", open("fake.csv", "rb"),\
@@ -44,7 +53,7 @@ def test_bad_request_check2():
     res = s.put(url, files=files)
     assert res.status_code == 400
 
-def test_bad_request_check3():
+def test_bad_request3():
     s = log_in_session()
     url = generate_url()
     files = {"calibration": ("fake.tgz", open("fake.tgz", "rb"),\
