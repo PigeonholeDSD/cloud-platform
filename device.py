@@ -64,7 +64,7 @@ def get_calibration(uuid: uuid.UUID):
     def delete_file(response):
         shutil.rmtree(tmp_dir)
         return response
-    return send_file(file_handler, 'application/octet-stream')
+    return send_file(file_handler, 'application/x-tar+gzip')
     # file = model if model else db.model.getBase()
     # response = make_response(send_file(file), 200)
     # response.headers['Signature'] = crypto.sign(filename)
@@ -140,8 +140,13 @@ def delete_model(uuid: uuid.UUID):
     return '', 200
 
 
-@bp.delete('/device/<uuid:uuid>')
+@bp.delete('<uuid:uuid>')
 def delete_device(uuid):
     admin_only()
+    data = APIRequestBody({
+        'ban': bool
+    })
     db.device.remove(uuid)
+    if data.ban:
+        db.device.get(uuid).banned = True
     return '', 200
