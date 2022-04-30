@@ -43,4 +43,4 @@ def is_admin() -> bool:
 
 def admin_only():
     if not is_admin():
-        raise error.Forbidden('Permission denied')
+        raise error.Forbidden()

@@ -75,9 +75,10 @@ def get_calibration(uuid: uuid.UUID):
 def put_calibration(uuid: uuid.UUID):
     logged_in(uuid)
     file = request.files.get('calibration')
-    if not file or file.content_type != 'application/x-tar+gzip':
-        raise error.APISyntaxError(
-            'The request must be of type application/json')
+    if not file:
+        raise error.APISyntaxError('No file uploaded')
+    if file.content_type != 'application/x-tar+gzip':
+        raise error.APISyntaxError('The file must be of type application/x-tar+gzip')
     path = mkdtemp()
     try:
         filename = os.path.join(path, 'cal.tar.gz')
@@ -124,9 +125,7 @@ def put_model(uuid: uuid.UUID):
     admin_only()
     file = request.files.get('model')
     if not file:
-        return jsonify({
-            'error': 'No file uploaded',
-        }), 400
+        raise error.APISyntaxError('No file uploaded')
     path = os.path.join(mkdtemp(), 'model')
     file.save(path)
     db.device.get(uuid).model = path

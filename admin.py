@@ -24,7 +24,7 @@ def create_session():
         })
         return '', 200
     else:
-        raise error.Forbidden('Login failed')
+        raise error.Forbidden()
 
 
 @bp.delete('/session')
@@ -35,13 +35,11 @@ def session_delete():
 
 
 @bp.put('/model/base')
-def model_base_put():
+def put_model_base():
     admin_only()
     file = request.files.get('model')
     if not file:
-        return jsonify({
-            'error': 'No file uploaded',
-        }), 400
+        raise error.APISyntaxError('No file uploaded')
     path = os.path.join(mkdtemp(), 'model')
     file.save(path)
     db.model.setBase(path)
