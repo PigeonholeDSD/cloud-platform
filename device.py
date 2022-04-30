@@ -4,7 +4,7 @@ import time
 import shutil
 import tarfile
 from tempfile import mkdtemp
-from flask import Blueprint, make_response, request, jsonify, send_file
+from flask import Blueprint, after_this_request, make_response, request, jsonify, send_file
 import error
 from util import *
 import db.device
@@ -54,7 +54,16 @@ def get_calibration(uuid: uuid.UUID):
     path = db.device.get(uuid).calibration
     if not path:
         return '', 404
-    raise error.APISyntaxError('NOT IMPLEMENTED YET')
+    tmp_dir = mkdtemp()
+    tmp_path = os.path.join(tmp_dir, 'calibration.tar.gz')
+    with tarfile.open(tmp_path, "w:gz") as tar:
+        tar.add(path)
+    file_handler = open(tmp_path, 'r')
+    @after_this_request
+    def delete_file(response):
+        shutil.rmtree(tmp_dir)
+        return response
+    return send_file(file_handler)
     # file = model if model else db.model.getBase()
     # response = make_response(send_file(file), 200)
     # response.headers['Signature'] = crypto.sign(filename)
