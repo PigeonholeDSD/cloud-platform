@@ -4,8 +4,10 @@
 import os
 import os.path
 import sys
+import atexit
 import secrets
 from datetime import timedelta
+from signal import SIGTERM
 from flask import Flask
 import error
 import admin
@@ -14,6 +16,10 @@ import device
 from util import *
 
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+os.setpgrp()
+@atexit.register
+def goodbye():
+    os.killpg(0, SIGTERM)
 
 app = Flask(__name__)
 app.config.update({
