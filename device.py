@@ -64,7 +64,7 @@ def get_calibration(uuid: uuid.UUID):
     def delete_file(response):
         shutil.rmtree(tmp_dir)
         return response
-    return send_file(file_handler)
+    return send_file(file_handler, 'application/octet-stream')
     # file = model if model else db.model.getBase()
     # response = make_response(send_file(file), 200)
     # response.headers['Signature'] = crypto.sign(filename)
@@ -84,8 +84,11 @@ def put_calibration(uuid: uuid.UUID):
         file.save(filename)
         if not is_admin():
             crypto.check_file(filename, request.headers.get('Signature'), uuid)
-        tf = tarfile.open(filename)
-        tf.extractall(path)
+        try:
+            with tarfile.open(filename) as tf:
+                tf.extractall(path)
+        except:
+            raise error.APISyntaxError('Bad tarball')
         db.device.get(uuid).calibration = path
         train.train(db.device.get(uuid))
     finally:
@@ -105,7 +108,7 @@ def get_model(uuid: uuid.UUID):
     logged_in(uuid)
     model = db.device.get(uuid).model
     file = model if model else db.model.getBase()
-    response = make_response(send_file(file), 200)
+    response = make_response(send_file(file, 'application/octet-stream'), 200)
     response.headers['Signature'] = crypto.sign_file(file)
     if model:
         last_modified = os.path.getmtime(model)
