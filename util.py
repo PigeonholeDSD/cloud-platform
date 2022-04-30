@@ -34,7 +34,7 @@ class APIRequestBody(object):
 def logged_in(uuid: uuid.UUID):
     if is_admin():
         return
-    if not crypto.check_ticket(uuid):
+    if not crypto.check_ticket(request.headers.get('Authorization', ''), uuid):
         raise error.NotLoggedIn('Invalid device ticket')
 
 

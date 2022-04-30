@@ -78,10 +78,10 @@ def put_calibration(uuid: uuid.UUID):
         raise error.APISyntaxError(
             'The request must be of type application/json')
     path = mkdtemp()
-    filename = os.path.join(path, 'cal.tar.gz')
-    file.save(filename)
     try:
-        crypto.verify(filename, request.headers.get('Signature'))
+        filename = os.path.join(path, 'cal.tar.gz')
+        file.save(filename)
+        crypto.check_file(filename, request.headers.get('Signature'), uuid)
         tf = tarfile.open(filename)
         tf.extractall(path)
         db.device.get(uuid).calibration = path
@@ -103,7 +103,7 @@ def get_model(uuid: uuid.UUID):
     model = db.device.get(uuid).model
     file = model if model else db.model.getBase()
     response = make_response(send_file(file), 200)
-    response.headers['Signature'] = crypto.sign(file)
+    response.headers['Signature'] = crypto.sign_file(file)
     if model:
         last_modified = os.path.getmtime(model)
         last_modified = time.gmtime(last_modified)
