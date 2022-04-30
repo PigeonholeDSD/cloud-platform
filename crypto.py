@@ -71,8 +71,8 @@ def sign_device(uuid: uuid.UUID):
 
 
 def timestamp(_time: int = 0) -> str:
-    t = str(int(_time if _time else time.time())).encode()
-    sig = hmac.new(cloud_key().encode(), t, hashlib.sha1).hexdigest()
+    t = str(int(_time if _time else time.time()))
+    sig = hmac.new(cloud_key().encode(), t.encode(), hashlib.sha1).hexdigest()
     return t+':'+sig
 
 
