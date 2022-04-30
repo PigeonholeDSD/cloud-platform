@@ -1,5 +1,6 @@
 # Author: Alex Xu
 # Description: This file is used to provide database function prototype.
+import uuid
 
 class Device():
     """
@@ -43,6 +44,7 @@ class Device():
     """
 
     def __init__(self) -> None:
+        self.id: uuid.UUID = None
         self.banned: bool = False
         self.email: str = None
         self.model: str = None
@@ -57,6 +59,7 @@ def get(uuid: str, create: bool=False) -> Device:
     Returns a `db.device.Device` instance if the device is found or created, `None` otherwise.
     """
     new_device = Device()
+    new_device.id = uuid.UUID(str(uuid))
     new_device.banned = False
     new_device.email = "123@qq.com"
     new_device.model = "./app.py"

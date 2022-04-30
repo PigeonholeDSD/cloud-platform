@@ -18,10 +18,10 @@ class SimDevice:
         if not uuid:
             uuid = uuid.uuid4()
         self.uuid = str(uuid)
-        self.key = SigningKey().generate()
-        device_pubkey = self.key.verify_key.encode(HexEncoder)
+        self.key = SigningKey.generate()
+        device_pubkey = self.key.verify_key.encode(HexEncoder).decode()
         device_cert = cloud_key.sign(
-            (device_pubkey+self.uuid).encode(), encoder=HexEncoder).signature
+            (device_pubkey+self.uuid).encode(), encoder=HexEncoder).signature.decode()
         self.cert = device_pubkey+':'+device_cert
 
     def ticket(self, ts: str) -> str:

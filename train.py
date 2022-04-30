@@ -1,6 +1,7 @@
 # python3 train.py <data_dir> <new_model> <base_model>
 
 import time
+import uuid
 import shutil
 import os.path
 import threading
@@ -9,8 +10,8 @@ from tempfile import mkdtemp
 import db.device
 import db.model
 
-_tasks = {}
-_stops = {}
+_tasks: dict[uuid.UUID, threading.Thread] = {}
+_stops: dict[uuid.UUID, threading.Event] = {}
 
 
 def notify(device: db.device.Device) -> None:
@@ -59,7 +60,8 @@ def _train(device: db.device.Device) -> None:
         name=str(device.id),
         target=__train,
         args=(device, _stops[device.id])
-    ).start()
+    )
+    _tasks[device.id].start()
 
 
 def train(device: db.device.Device) -> None:

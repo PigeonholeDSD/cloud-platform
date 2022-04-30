@@ -3,7 +3,6 @@
 
 import os
 import os.path
-import sys
 import atexit
 import secrets
 from datetime import timedelta
@@ -15,7 +14,7 @@ import crypto
 import device
 from util import *
 
-os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 os.setpgrp()
 @atexit.register
 def goodbye():

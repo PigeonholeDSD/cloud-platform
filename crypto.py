@@ -33,7 +33,7 @@ def cloud_key() -> SigningKey:
 
 
 def sign(data: str) -> str:
-    return cloud_key().sign(data.encode(), encoder=HexEncoder).signature
+    return cloud_key().sign(data.encode(), encoder=HexEncoder).signature.decode()
 
 
 def verify(data: str, sig: str, pub: str = None) -> bool:
@@ -82,8 +82,9 @@ def check_ticket(ticket: str, uuid: uuid.UUID) -> None:
         ts = t+':'+tsig
         if timestamp(t) != ts:
             raise error.NotLoggedIn('Invalid timestamp in device ticket')
-        if t+current_app.config['TICKET_LIFETIME'] < time.time():
+        if int(t)+current_app.config['TICKET_LIFETIME'] < time.time():
             raise error.NotLoggedIn('Timestamp expired')
+        print('fuck')
         if not verify(ts, sig, pubkey):
             raise error.NotLoggedIn('Invalid timestamp signature')
         if not verify(pubkey+str(uuid), cert):
