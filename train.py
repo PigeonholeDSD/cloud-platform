@@ -15,8 +15,9 @@ _stops: dict = {}
 
 
 def notify(device: db.device.Device) -> None:
-    print(
-        f'Sending email to {device.email}, notifying new model for {device.id}')
+    if device.email:
+        print(
+            f'Sending email to {device.email}, notifying new model for {device.id}')
 
 
 def __train(device: db.device.Device, stop: threading.Event) -> None:
