@@ -4,7 +4,10 @@ import os.path
 import time
 import hmac
 import uuid
+import shutil
 import hashlib
+import tarfile
+from tempfile import mkdtemp
 from flask import current_app
 from nacl.encoding import HexEncoder
 from nacl.signing import SigningKey, VerifyKey
@@ -63,13 +66,6 @@ def sign_file(file: str) -> str:
     return sign(hash_file(file))
 
 
-def sign_device(devid: uuid.UUID):
-    device_key = SigningKey.generate()
-    device_pubkey = device_key.verify_key.encode(HexEncoder).decode()
-    device_cert = sign(device_pubkey+str(devid))
-    return device_key.encode(), device_pubkey+':'+device_cert
-
-
 def timestamp(_time: int = 0) -> str:
     t = str(int(_time if _time else time.time()))
     sig = hmac.new(cloud_key().encode(), t.encode(), hashlib.sha1).hexdigest()
@@ -107,3 +103,22 @@ def check_file(file: str, sig: str, devid: uuid.UUID) -> None:
         raise e
     except Exception:
         raise error.SignatureError('Invalid signature')
+
+
+def sign_device(devid: uuid.UUID):
+    tmp_dir = mkdtemp()
+    with open(os.path.join(tmp_dir, 'id'), 'w') as f:
+        f.write(str(devid))
+    device_key = SigningKey.generate()
+    with open(os.path.join(tmp_dir, 'device.key'), 'wb') as f:
+        f.write(device_key.encode())
+    device_pubkey = device_key.verify_key.encode(HexEncoder).decode()
+    device_cert = sign(device_pubkey+str(devid))
+    with open(os.path.join(tmp_dir, 'device.crt'), 'w') as f:
+        f.write(device_pubkey+':'+device_cert)
+    with tarfile.open(str(devid)+'.tar', "w") as tar:
+        tar.add(name=os.path.join(tmp_dir, 'id'), arcname='id')
+        tar.add(name=os.path.join(tmp_dir, 'device.key'), arcname='device.key')
+        tar.add(name=os.path.join(tmp_dir, 'device.key'), arcname='device.key')
+        tar.add(name='cloud.pub', arcname='ca.pub')
+    shutil.rmtree(tmp_dir)
