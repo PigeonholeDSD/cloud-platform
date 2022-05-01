@@ -1,0 +1,3 @@
+[submodule "db"]
+	path = db
+	url = https://liyu.utad.pt/happy-family/db.git
