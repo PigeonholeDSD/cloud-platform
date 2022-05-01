@@ -45,7 +45,6 @@ def delete_email(devid: uuid.UUID):
     return '', 200
 
 
-# TODO
 @bp.get('<uuid:devid>/calibration')
 def get_calibration(devid: uuid.UUID):
     logged_in(devid)
@@ -58,17 +57,17 @@ def get_calibration(devid: uuid.UUID):
     tmp_dir = mkdtemp()
     tmp_path = os.path.join(tmp_dir, 'calibration.tar.gz')
     with tarfile.open(tmp_path, "w:gz") as tar:
-        tar.add(path)
-    file_handler = open(tmp_path, 'rb')
+        for motion in os.listdir(path):
+            tar.add(
+                name=os.path.join(path, motion),
+                arcname=motion,
+            )
+
     @after_this_request
     def delete_file(response):
         shutil.rmtree(tmp_dir)
         return response
-    return send_file(file_handler, 'application/x-tar+gzip')
-    # file = model if model else db.model.getBase()
-    # response = make_response(send_file(file), 200)
-    # response.headers['Signature'] = crypto.sign(filename)
-    # return response
+    return send_file(open(tmp_path, 'rb'), 'application/x-tar+gzip')
 
 
 @bp.put('<uuid:devid>/calibration')
@@ -78,13 +77,15 @@ def put_calibration(devid: uuid.UUID):
     if not file:
         raise error.APISyntaxError('No file uploaded')
     if file.content_type != 'application/x-tar+gzip':
-        raise error.APISyntaxError('The file must be of type application/x-tar+gzip')
+        raise error.APISyntaxError(
+            'The file must be of type application/x-tar+gzip')
     path = mkdtemp()
     try:
         filename = os.path.join(path, 'cal.tar.gz')
         file.save(filename)
         if not is_admin():
-            crypto.check_file(filename, request.headers.get('Signature', ''), devid)
+            crypto.check_file(
+                filename, request.headers.get('Signature', ''), devid)
         try:
             with tarfile.open(filename) as tf:
                 tf.extractall(path)
