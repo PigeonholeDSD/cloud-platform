@@ -16,6 +16,7 @@ Run the following command to install the dependencies:
 git clone https://github.com/PigeonholeDSD/cloud-platform.git
 cd cloud-platform/
 pip install -r requirements.txt
+git submodule update --init
 ```
 
 Run in the development mode:
