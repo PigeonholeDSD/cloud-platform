@@ -38,11 +38,11 @@ def sign(data: str) -> str:
 
 def verify(data: str, sig: str, pub: str = None) -> bool:
     if pub:
-        verify_key = VerifyKey(pub, encoder=HexEncoder)
+        verify_key = VerifyKey(pub.encode(), encoder=HexEncoder)
     else:
         verify_key = cloud_key().verify_key
     try:
-        verify_key.verify(data.encode(), HexEncoder().decode(sig))
+        verify_key.verify(data.encode(), HexEncoder().decode(sig.encode()))
         return True
     except:
         return False
@@ -64,8 +64,8 @@ def sign_file(file: str) -> str:
 
 
 def sign_device(uuid: uuid.UUID):
-    device_key = SigningKey().generate()
-    device_pubkey = device_key.verify_key.encode(HexEncoder)
+    device_key = SigningKey.generate()
+    device_pubkey = device_key.verify_key.encode(HexEncoder).decode()
     device_cert = sign(device_pubkey+str(uuid))
     return device_key.encode(), device_pubkey+':'+device_cert
 
@@ -80,7 +80,7 @@ def check_ticket(ticket: str, uuid: uuid.UUID) -> None:
     try:
         t, tsig, sig, pubkey, cert = ticket.split(':')
         ts = t+':'+tsig
-        if timestamp(t) != ts:
+        if timestamp(int(t)) != ts:
             raise error.NotLoggedIn('Invalid timestamp in device ticket')
         if int(t)+current_app.config['TICKET_LIFETIME'] < time.time():
             raise error.NotLoggedIn('Timestamp expired')

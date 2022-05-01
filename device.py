@@ -59,7 +59,7 @@ def get_calibration(uuid: uuid.UUID):
     tmp_path = os.path.join(tmp_dir, 'calibration.tar.gz')
     with tarfile.open(tmp_path, "w:gz") as tar:
         tar.add(path)
-    file_handler = open(tmp_path, 'r')
+    file_handler = open(tmp_path, 'rb')
     @after_this_request
     def delete_file(response):
         shutil.rmtree(tmp_dir)
@@ -84,7 +84,7 @@ def put_calibration(uuid: uuid.UUID):
         filename = os.path.join(path, 'cal.tar.gz')
         file.save(filename)
         if not is_admin():
-            crypto.check_file(filename, request.headers.get('Signature'), uuid)
+            crypto.check_file(filename, request.headers.get('Signature', ''), uuid)
         try:
             with tarfile.open(filename) as tf:
                 tf.extractall(path)
@@ -112,11 +112,9 @@ def get_model(uuid: uuid.UUID):
     response = make_response(send_file(file, 'application/octet-stream'), 200)
     response.headers['Signature'] = crypto.sign_file(file)
     if model:
-        last_modified = os.path.getmtime(model)
-        last_modified = time.gmtime(last_modified)
-        last_modified = time.strftime(
+        last_modified = time.gmtime(os.path.getmtime(model))
+        response.headers['Last-Modified'] = time.strftime(
             '%a, %d %b %Y %H:%M:%S GMT', last_modified)
-        response.headers['Last-Modified'] = last_modified
     return response
 
 

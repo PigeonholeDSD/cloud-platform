@@ -38,7 +38,7 @@ def logged_in(uuid: uuid.UUID):
 
 
 def is_admin() -> bool:
-    return db.admin.check(session.get('user'), session.get('pass'))
+    return db.admin.check(session.get('user', ''), session.get('pass', ''))
 
 
 def admin_only():

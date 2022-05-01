@@ -23,7 +23,7 @@ def __train(device: db.device.Device, stop: threading.Event) -> None:
     print(f'Starting training for {device.id}')
     new_model = os.path.join(mkdtemp(), 'model')
     proc = subprocess.Popen(
-        ['/usr/bin/env', 'python3', 'train.py', device.calibration,
+        ['/usr/bin/env', 'python3', 'train.py', device.calibration or '',
             new_model, device.model or db.model.getBase()],
         cwd='algo'
     )
@@ -42,7 +42,7 @@ def __train(device: db.device.Device, stop: threading.Event) -> None:
     if proc.returncode == 0:
         print(f'Finished training for {device.id}')
         device.model = new_model
-        threading.Thread(target=notify, args=(device)).start()
+        threading.Thread(target=notify, args=(device,)).start()
     else:
         print(f'Training for {device.id} failed returning {proc.returncode}')
     shutil.rmtree(os.path.dirname(new_model))
@@ -65,4 +65,4 @@ def _train(device: db.device.Device) -> None:
 
 
 def train(device: db.device.Device) -> None:
-    threading.Thread(target=_train, args=(device)).start()
+    threading.Thread(target=_train, args=(device,)).start()

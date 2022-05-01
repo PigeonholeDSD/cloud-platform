@@ -46,11 +46,11 @@ class Device():
     def __init__(self) -> None:
         self.id: uuid.UUID = None
         self.banned: bool = False
-        self.email: str = None
-        self.model: str = None
-        self.calibration: str = None
+        self.email: str|None = None
+        self.model: str|None = None
+        self.calibration: str|None = None
 
-def get(uuid: str, create: bool=False) -> Device:
+def get(uuid: str|uuid.UUID, create: bool=False) -> Device:
     """
     Get the `db.device.Device` object of the device with a specified UUID. The UUID must be a valid UUIDv4.
 
