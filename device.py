@@ -89,6 +89,7 @@ def put_calibration(devid: uuid.UUID):
         try:
             with tarfile.open(filename) as tf:
                 tf.extractall(path)
+            os.unlink(filename)
         except:
             raise error.APISyntaxError('Bad tarball')
         db.device.get(devid).calibration = path
