@@ -10,8 +10,8 @@ from tempfile import mkdtemp
 import db.device
 import db.model
 
-_tasks: dict[uuid.UUID, threading.Thread] = {}
-_stops: dict[uuid.UUID, threading.Event] = {}
+_tasks: dict = {}
+_stops: dict = {}
 
 
 def notify(device: db.device.Device) -> None:
