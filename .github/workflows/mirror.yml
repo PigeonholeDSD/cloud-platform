@@ -1,0 +1,15 @@
+name: Mirror to Liyu GitLab
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone & Push
+        run: |
+          git clone https://github.com/PigeonholeDSD/${GITHUB_REPOSITORY##*/}.git
+          cd ${GITHUB_REPOSITORY##*/}
+          git remote add liyu https://_:${{ secrets.LIYU_TOKEN }}@liyu.utad.pt/pigeonhole/${GITHUB_REPOSITORY##*/}.git
+          git push -u liyu --all --force
