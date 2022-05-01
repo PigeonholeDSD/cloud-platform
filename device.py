@@ -109,7 +109,7 @@ def delete_calibration(devid: uuid.UUID):
 def get_model(devid: uuid.UUID):
     logged_in(devid)
     model = db.device.get(devid).model
-    file = model if model else db.model.getBase()
+    file = model or db.model.getBase()
     response = make_response(send_file(file, 'application/octet-stream'), 200)
     response.headers['Signature'] = crypto.sign_file(file)
     if model:
