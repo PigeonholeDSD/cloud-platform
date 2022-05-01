@@ -14,10 +14,10 @@ import db.model
 bp = Blueprint('device', __name__, url_prefix='/device')
 
 
-@bp.get('<uuid:uuid>/email')
-def get_email(uuid: uuid.UUID):
-    logged_in(uuid)
-    email = db.device.get(uuid).email
+@bp.get('<uuid:devid>/email')
+def get_email(devid: uuid.UUID):
+    logged_in(devid)
+    email = db.device.get(devid).email
     if not email:
         return '', 404
     return jsonify({
@@ -25,34 +25,34 @@ def get_email(uuid: uuid.UUID):
     }), 200
 
 
-@bp.post('<uuid:uuid>/email')
-def post_email(uuid: uuid.UUID):
-    logged_in(uuid)
+@bp.post('<uuid:devid>/email')
+def post_email(devid: uuid.UUID):
+    logged_in(devid)
     data = APIRequestBody({
         'email': str,
     })
     if len(data.email) > 254 or \
             not re.match(r'^[a-zA-Z0-9_.+-]{1,64}@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$', data.email):
         raise error.APISyntaxError('Invalid email')
-    db.device.get(uuid).email = data.email
+    db.device.get(devid).email = data.email
     return '', 200
 
 
-@bp.delete('<uuid:uuid>/email')
-def delete_email(uuid: uuid.UUID):
-    logged_in(uuid)
-    db.device.get(uuid).email = None
+@bp.delete('<uuid:devid>/email')
+def delete_email(devid: uuid.UUID):
+    logged_in(devid)
+    db.device.get(devid).email = None
     return '', 200
 
 
 # TODO
-@bp.get('<uuid:uuid>/calibration')
-def get_calibration(uuid: uuid.UUID):
-    logged_in(uuid)
+@bp.get('<uuid:devid>/calibration')
+def get_calibration(devid: uuid.UUID):
+    logged_in(devid)
     if request.method == 'HEAD':
-        return '', (200 if db.device.get(uuid).calibration else 404)
+        return '', (200 if db.device.get(devid).calibration else 404)
     admin_only()
-    path = db.device.get(uuid).calibration
+    path = db.device.get(devid).calibration
     if not path:
         return '', 404
     tmp_dir = mkdtemp()
@@ -71,9 +71,9 @@ def get_calibration(uuid: uuid.UUID):
     # return response
 
 
-@bp.put('<uuid:uuid>/calibration')
-def put_calibration(uuid: uuid.UUID):
-    logged_in(uuid)
+@bp.put('<uuid:devid>/calibration')
+def put_calibration(devid: uuid.UUID):
+    logged_in(devid)
     file = request.files.get('calibration')
     if not file:
         raise error.APISyntaxError('No file uploaded')
@@ -84,30 +84,30 @@ def put_calibration(uuid: uuid.UUID):
         filename = os.path.join(path, 'cal.tar.gz')
         file.save(filename)
         if not is_admin():
-            crypto.check_file(filename, request.headers.get('Signature', ''), uuid)
+            crypto.check_file(filename, request.headers.get('Signature', ''), devid)
         try:
             with tarfile.open(filename) as tf:
                 tf.extractall(path)
         except:
             raise error.APISyntaxError('Bad tarball')
-        db.device.get(uuid).calibration = path
-        train.train(db.device.get(uuid))
+        db.device.get(devid).calibration = path
+        train.train(db.device.get(devid))
     finally:
         shutil.rmtree(path)
     return '', 200
 
 
-@bp.delete('<uuid:uuid>/calibration')
-def delete_calibration(uuid: uuid.UUID):
-    logged_in(uuid)
-    db.device.get(uuid).calibration = None
+@bp.delete('<uuid:devid>/calibration')
+def delete_calibration(devid: uuid.UUID):
+    logged_in(devid)
+    db.device.get(devid).calibration = None
     return '', 200
 
 
-@bp.get('<uuid:uuid>/model')
-def get_model(uuid: uuid.UUID):
-    logged_in(uuid)
-    model = db.device.get(uuid).model
+@bp.get('<uuid:devid>/model')
+def get_model(devid: uuid.UUID):
+    logged_in(devid)
+    model = db.device.get(devid).model
     file = model if model else db.model.getBase()
     response = make_response(send_file(file, 'application/octet-stream'), 200)
     response.headers['Signature'] = crypto.sign_file(file)
@@ -118,33 +118,33 @@ def get_model(uuid: uuid.UUID):
     return response
 
 
-@bp.put('<uuid:uuid>/model')
-def put_model(uuid: uuid.UUID):
+@bp.put('<uuid:devid>/model')
+def put_model(devid: uuid.UUID):
     admin_only()
     file = request.files.get('model')
     if not file:
         raise error.APISyntaxError('No file uploaded')
     path = os.path.join(mkdtemp(), 'model')
     file.save(path)
-    db.device.get(uuid).model = path
+    db.device.get(devid).model = path
     shutil.rmtree(os.path.dirname(path))
     return '', 200
 
 
-@bp.delete('<uuid:uuid>/model')
-def delete_model(uuid: uuid.UUID):
-    logged_in(uuid)
-    db.device.get(uuid).model = None
+@bp.delete('<uuid:devid>/model')
+def delete_model(devid: uuid.UUID):
+    logged_in(devid)
+    db.device.get(devid).model = None
     return '', 200
 
 
-@bp.delete('<uuid:uuid>')
-def delete_device(uuid):
+@bp.delete('<uuid:devid>')
+def delete_device(devid: uuid.UUID):
     admin_only()
     data = APIRequestBody({
         'ban': bool
     })
-    db.device.remove(uuid)
+    db.device.remove(devid)
     if data.ban:
-        db.device.get(uuid).banned = True
+        db.device.get(devid).banned = True
     return '', 200

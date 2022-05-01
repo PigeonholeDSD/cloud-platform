@@ -44,13 +44,13 @@ class Device():
     """
 
     def __init__(self) -> None:
-        self.id: uuid.UUID = None
+        self.id: uuid.UUID = uuid.uuid4()
         self.banned: bool = False
         self.email: str|None = None
         self.model: str|None = None
         self.calibration: str|None = None
 
-def get(uuid: str|uuid.UUID, create: bool=False) -> Device:
+def get(devid: str|uuid.UUID, create: bool=False) -> Device:
     """
     Get the `db.device.Device` object of the device with a specified UUID. The UUID must be a valid UUIDv4.
 
@@ -59,14 +59,14 @@ def get(uuid: str|uuid.UUID, create: bool=False) -> Device:
     Returns a `db.device.Device` instance if the device is found or created, `None` otherwise.
     """
     new_device = Device()
-    new_device.id = uuid.UUID(str(uuid))
+    new_device.id = uuid.UUID(str(devid))
     new_device.banned = False
     new_device.email = "123@qq.com"
     new_device.model = "./app.py"
     new_device.calibration = "/"
     return new_device
 
-def remove(uuid: str)-> None:
+def remove(devid: str|uuid.UUID)-> None:
     """
     Delete everything about the device with the specified UUID.
 

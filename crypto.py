@@ -63,10 +63,10 @@ def sign_file(file: str) -> str:
     return sign(hash_file(file))
 
 
-def sign_device(uuid: uuid.UUID):
+def sign_device(devid: uuid.UUID):
     device_key = SigningKey.generate()
     device_pubkey = device_key.verify_key.encode(HexEncoder).decode()
-    device_cert = sign(device_pubkey+str(uuid))
+    device_cert = sign(device_pubkey+str(devid))
     return device_key.encode(), device_pubkey+':'+device_cert
 
 
@@ -76,7 +76,7 @@ def timestamp(_time: int = 0) -> str:
     return t+':'+sig
 
 
-def check_ticket(ticket: str, uuid: uuid.UUID) -> None:
+def check_ticket(ticket: str, devid: uuid.UUID) -> None:
     try:
         t, tsig, sig, pubkey, cert = ticket.split(':')
         ts = t+':'+tsig
@@ -87,7 +87,7 @@ def check_ticket(ticket: str, uuid: uuid.UUID) -> None:
         print('fuck')
         if not verify(ts, sig, pubkey):
             raise error.NotLoggedIn('Invalid timestamp signature')
-        if not verify(pubkey+str(uuid), cert):
+        if not verify(pubkey+str(devid), cert):
             raise error.NotLoggedIn('Invalid pubkey')
     except error.DSDException as e:
         raise e
@@ -95,13 +95,13 @@ def check_ticket(ticket: str, uuid: uuid.UUID) -> None:
         raise error.NotLoggedIn('Invalid device ticket')
 
 
-def check_file(file: str, sig: str, uuid: uuid.UUID) -> None:
+def check_file(file: str, sig: str, devid: uuid.UUID) -> None:
     try:
         sig, pubkey, cert = sig.split(':')
         hash = hash_file(file)
         if not verify(hash, sig, pubkey):
             raise error.SignatureError('Invalid file signautre')
-        if not verify(pubkey+str(uuid), cert):
+        if not verify(pubkey+str(devid), cert):
             raise error.SignatureError('Invalid file pubkey')
     except error.DSDException as e:
         raise e

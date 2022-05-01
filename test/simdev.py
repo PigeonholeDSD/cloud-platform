@@ -14,14 +14,14 @@ with open(os.path.join(keydir, 'cloud.pub'), 'rb') as f:
 
 
 class SimDevice:
-    def __init__(self, uuid: uuid.UUID = None):
-        if not uuid:
-            uuid = uuid.uuid4()
-        self.uuid = str(uuid)
+    def __init__(self, devid: uuid.UUID = None):
+        if not devid:
+            devid = uuid.uuid4()
+        self.id = str(devid)
         self.key = SigningKey.generate()
         device_pubkey = self.key.verify_key.encode(HexEncoder).decode()
         device_cert = cloud_key.sign(
-            (device_pubkey+self.uuid).encode(), encoder=HexEncoder).signature.decode()
+            (device_pubkey+self.id).encode(), encoder=HexEncoder).signature.decode()
         self.cert = device_pubkey+':'+device_cert
 
     def ticket(self, ts: str) -> str:

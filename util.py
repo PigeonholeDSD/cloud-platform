@@ -31,16 +31,16 @@ class APIRequestBody(object):
         return self.data.get(key)
 
 
-def logged_in(uuid: uuid.UUID):
+def logged_in(devid: uuid.UUID) -> None:
     if is_admin():
         return
-    crypto.check_ticket(request.headers.get('Authorization', ''), uuid)
+    crypto.check_ticket(request.headers.get('Authorization', ''), devid)
 
 
 def is_admin() -> bool:
     return db.admin.check(session.get('user', ''), session.get('pass', ''))
 
 
-def admin_only():
+def admin_only() -> None:
     if not is_admin():
         raise error.Forbidden()
