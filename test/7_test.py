@@ -4,6 +4,9 @@
 # @Author  : Xiaoquan Xu
 # @File    : 7_test.py
 
+# Test 7.Clear calibration data from the cloud
+# `DELETE /device/<uuid>/calibration`
+
 import os
 import json
 import uuid

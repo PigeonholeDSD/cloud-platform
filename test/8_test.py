@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# @Time    : 2022/05/02 23:27
+# @Time    : 2022/05/03 22:14
 # @Author  : Xiaoquan Xu
-# @File    : 9_test.py
+# @File    : 8_test.py
 
-# Test 9.Acquire the current version of the device model
-# `GET /device/<uuid>/model`
+# Test 8.Check the version of the device model on the server
+# `HEAD /device/<uuid>/model`
 
 import os
 import uuid
@@ -30,12 +30,13 @@ def log_in_session() -> requests.Session:
     s.post(API_BASE + "/session", json=body)
     return s
     
-def test_good_get_base_model():
+def test_good_check_base_model():
     simd = SimDevice()
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
-    res = requests.get(generate_url(simd.id), headers=head)
+    res = requests.head(generate_url(simd.id), headers=head)
     assert "Last-Modified" not in res.headers
+    assert res.headers["Content-Length"][0] != '-'
     assert res.status_code == 200
 
 def generate_file(name: str):
@@ -62,7 +63,7 @@ def hash_content(content):
         f.write(content)
     return hash_tar("_tmp")
 
-def test_good_get_model():
+def test_good_check_model():
     simd = SimDevice()
     s = log_in_session()
     url = generate_url(simd.id)
@@ -70,37 +71,18 @@ def test_good_get_model():
     files = {"model": ("f1.tgz", open("t1.tgz", "rb"),\
         "application/octet-stream")}
     res = s.put(url, files=files)
-    h1 = hash_tar("t1.tgz")
+    hash_tar("t1.tgz")
     
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
-    res = requests.get(generate_url(simd.id), headers=head)
+    res = requests.head(generate_url(simd.id), headers=head)
     print(res.headers["Last-Modified"])
     print(time.strftime('%a, %d %b %Y %H', time.gmtime(time.time())))
     assert res.headers["Last-Modified"].find(time.strftime(\
         '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
-    assert hash_content(res.content) == h1
+    assert res.content == b""
     assert res.status_code == 200
-
-def test_signature():
-    simd = SimDevice()
-    s = log_in_session()
-    url = generate_url(simd.id)
-    generate_tgz("t1.tgz")
-    files = {"model": ("f1.tgz", open("t1.tgz", "rb"),\
-        "application/octet-stream")}
-    res = s.put(url, files=files)
-    h1 = hash_tar("t1.tgz")
-    
-    ts = requests.get(API_BASE + "/timestamp").text
-    head = {"Authorization": simd.ticket(ts)}
-    res = requests.get(generate_url(simd.id), headers=head)
-    print(res.headers["Last-Modified"])
-    print(time.strftime('%a, %d %b %Y %H', time.gmtime(time.time())))
-    assert res.headers["Last-Modified"].find(time.strftime(\
-        '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
-    assert hash_content(res.content) == h1
-    assert simd.verify(h1, res.headers["Signature"])
+    assert res.headers["Content-Length"][0] != '-'
 
 if __name__ == "__main__":
-    pytest.main(["./9_test.py"])
+    pytest.main(["./8_test.py"])

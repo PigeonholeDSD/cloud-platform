@@ -4,12 +4,17 @@
 # @Author  : Xiaoquan Xu
 # @File    : 5_test.py
 
+# Test 5.Check whether calibration data is available
+# `HEAD /device/<uuid>/calibration`
+
 import os
-import json
 import uuid
 import pytest
+import random
+import tarfile
 import requests
 from names import *
+from simdev import *
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -30,10 +35,50 @@ def test_good_check():
     res = s.head(url)
     assert res.status_code in [200,404]
 
+def generate_file(name: str):
+    with open(name, "w") as f:
+        for _ in range(10):
+            f.write(str(random.randint(1,1000000))+"\n")
+
+def generate_tgz(name: str):
+    n_file = random.randint(1,5)
+    with tarfile.open(name, "w:gz") as ftar:
+        for i in range(n_file):
+            fname = name[:-4] + str(i) + ".csv"
+            generate_file(fname)
+            ftar.add(fname)
+            os.remove(fname)
+
+def hash_tar(name: str):
+    """Unzip files from `name` and map their filename
+    into hash value. Delete the files and the tarfile.
+
+    Args:
+        name (str): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    hash_tar = dict()
+    with tarfile.open(name, "r:gz") as ftar:
+        ftar.extractall()
+        for fname in ftar.getnames():
+            hash_tar[fname] = hash_file(fname)
+            os.remove(fname)
+    os.remove(name)
+    return hash_tar
+
+def hash_content(content):
+    with open("_tmp", "wb") as f:
+        f.write(content)
+    return hash_tar("_tmp")
+
 def test_updown_repeatedly():
     s = log_in_session()
     url = generate_url()
-    files = {"calibration": ("dah", open("fake.tgz", "rb"),\
+    tname = "t2.tgz"
+    generate_tgz(tname)
+    files = {"calibration": ("c2", open(tname, "rb"),\
         "application/x-tar+gzip", {"Expires": "0"})}
     
     res = s.put(url, files=files)
@@ -41,7 +86,7 @@ def test_updown_repeatedly():
     
     res = s.get(url)
     assert res.status_code == 200
-    assert json.loads(res.text) == files
+    assert hash_content(res.content) == hash_tar(tname)
     
     s2 = log_in_session()
     res = s2.head(url)
