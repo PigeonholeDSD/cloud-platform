@@ -85,7 +85,7 @@ def test_good_delete():
     res = s.get(url)
     assert res.status_code == 404
 
-def est_no_data_before_deletion():
+def test_no_data_before_deletion():
     s = log_in_session()
     url = generate_url()
     
@@ -98,7 +98,7 @@ def est_no_data_before_deletion():
     res = s.get(url)
     assert res.status_code == 404
     
-def est_delete_again():
+def test_delete_again():
     s = log_in_session()
     url = generate_url()
     
@@ -114,10 +114,12 @@ def est_delete_again():
     res = s.get(url)
     assert res.status_code == 404
        
-def est_delete_again_headcheck_multisession():
+def test_delete_again_headcheck_multisession():
     s = log_in_session()
     url = generate_url()
-    files = {"calibration": ("dah", open("fake.tgz", "rb"),\
+    tname = "t2.tgz"
+    generate_tgz(tname)
+    files = {"calibration": ("c2", open(tname, "rb"),\
         "application/x-tar+gzip", {"Expires": "0"})}
     
     res = s.put(url, files=files)
@@ -125,7 +127,7 @@ def est_delete_again_headcheck_multisession():
     
     res = s.get(url)
     assert res.status_code == 200
-    assert json.loads(res.text) == files
+    assert hash_content(res.content) == hash_tar(tname)
     
     s2 = log_in_session()
     res = s2.head(url)

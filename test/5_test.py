@@ -58,6 +58,5 @@ def test_updown_repeatedly():
     res = s4.head(url)
     assert res.status_code == 404
 
-
 if __name__ == "__main__":
     pytest.main(["./5_test.py"])

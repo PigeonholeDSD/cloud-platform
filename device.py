@@ -117,6 +117,8 @@ def get_model(devid: uuid.UUID):
         last_modified = time.gmtime(os.path.getmtime(model))
         response.headers['Last-Modified'] = time.strftime(
             '%a, %d %b %Y %H:%M:%S GMT', last_modified)
+    else:
+        del response.headers['Last-Modified']
     return response
 
 

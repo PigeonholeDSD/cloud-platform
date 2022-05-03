@@ -87,26 +87,28 @@ def test_upload_twice():
     
     res = s.put(url, files=files)
     assert res.status_code == 200
+    h1 = hash_tar(tname)
     
     s2 = log_in_session()
-    tname2 = "t22.tgz"
+    tname2 = "t21.tgz"
     generate_tgz(tname2)
-    files2 = {"calibration": ("c22", open(tname2, "rb"),\
+    files2 = {"calibration": ("c21", open(tname2, "rb"),\
         "application/x-tar+gzip", {"Expires": "0"})}
     
     res = s2.put(url, files=files2)
     assert res.status_code == 200
     
-    h1 = hash_tar(tname)
     h2 = hash_tar(tname2)
     assert h1 != h2
     
     s3 = log_in_session()
     res = s3.get(url)
     assert res.status_code == 200
-    print(hash_content(res.content))
-    print(h2)
-    assert hash_content(res.content) == h2
+    h3 = hash_content(res.content)
+    
+    for k in h2:
+        assert k in h3
+        assert h3[k] == h2[k]
 
 def test_download_twice():
     s = log_in_session()

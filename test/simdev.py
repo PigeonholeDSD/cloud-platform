@@ -1,6 +1,5 @@
 import os
 import os.path
-import sys
 import uuid
 import hashlib
 from nacl.encoding import HexEncoder
@@ -11,7 +10,6 @@ with open(os.path.join(keydir, 'cloud.key'), 'rb') as f:
     cloud_key = SigningKey(f.read())
 with open(os.path.join(keydir, 'cloud.pub'), 'rb') as f:
     ca = VerifyKey(f.read())
-
 
 class SimDevice:
     def __init__(self, devid: uuid.UUID = None):
@@ -25,10 +23,10 @@ class SimDevice:
         self.cert = device_pubkey+':'+device_cert
 
     def ticket(self, ts: str) -> str:
-        return ts+':'+self.sign(ts)
+        return ts + ':' + self.sign(ts)
 
     def sign(self, data: str) -> str:
-        return self.key.sign(data.encode(), encoder=HexEncoder).signature+':'+self.cert
+        return self.key.sign(data.encode(), encoder=HexEncoder).signature.decode() + ':' + self.cert
 
     def verify(self, data: str, sig: str) -> bool:
         try:
@@ -42,7 +40,6 @@ class SimDevice:
 
     def verify_file(self, file: str, sig: str) -> bool:
         return self.verify(hash_file(file), sig)
-
 
 def hash_file(file: str) -> str:
     h = hashlib.sha256()

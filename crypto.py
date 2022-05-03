@@ -80,7 +80,6 @@ def check_ticket(ticket: str, devid: uuid.UUID) -> None:
             raise error.NotLoggedIn('Invalid timestamp in device ticket')
         if int(t)+current_app.config['TICKET_LIFETIME'] < time.time():
             raise error.NotLoggedIn('Timestamp expired')
-        print('fuck')
         if not verify(ts, sig, pubkey):
             raise error.NotLoggedIn('Invalid timestamp signature')
         if not verify(pubkey+str(devid), cert):
