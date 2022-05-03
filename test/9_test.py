@@ -67,8 +67,7 @@ def test_good_get_model():
     s = log_in_session()
     url = generate_url(simd.id)
     generate_tgz("t1.tgz")
-    files = {"model": ("f1.tgz", open("t1.tgz", "rb"),\
-        "application/octet-stream")}
+    files = {"model": ("f1.tgz", open("t1.tgz", "rb"))}
     res = s.put(url, files=files)
     h1 = hash_tar("t1.tgz")
     
@@ -82,13 +81,12 @@ def test_good_get_model():
     assert hash_content(res.content) == h1
     assert res.status_code == 200
 
-def test_signature():
+def test_response():
     simd = SimDevice()
     s = log_in_session()
     url = generate_url(simd.id)
     generate_tgz("t1.tgz")
-    files = {"model": ("f1.tgz", open("t1.tgz", "rb"),\
-        "application/octet-stream")}
+    files = {"model": ("f1.tgz", open("t1.tgz", "rb"))}
     res = s.put(url, files=files)
     h1 = hash_tar("t1.tgz")
     
@@ -101,6 +99,7 @@ def test_signature():
         '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
     assert hash_content(res.content) == h1
     assert simd.verify(h1, res.headers["Signature"])
+    assert res.headers["Content-Type"] == "application/octet-stream"
 
 if __name__ == "__main__":
     pytest.main(["./9_test.py"])

@@ -4,6 +4,9 @@
 # @Author  : Xiaoquan Xu
 # @File    : 11_test.py
 
+# Test 11.Download the calibration data from the cloud
+# `GET /device/<uuid>/calibration`
+
 import os
 import uuid
 import tarfile
@@ -11,12 +14,14 @@ import random
 import pytest
 import requests
 from names import *
-import simdev 
+from simdev import *
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-def generate_url():
-    return API_BASE + "/device/" + str(uuid.uuid4()) + "/calibration"
+def generate_url(idd=None):
+    if idd == None:
+        idd = uuid.uuid4()
+    return API_BASE + "/device/" + str(idd) + "/calibration"
 
 def log_in_session() -> requests.Session:
     s = requests.Session()
@@ -52,7 +57,7 @@ def hash_tar(name: str):
     with tarfile.open(name, "r:gz") as ftar:
         ftar.extractall()
         for fname in ftar.getnames():
-            hash_tar[fname] = simdev.hash_file(fname)
+            hash_tar[fname] = hash_file(fname)
             os.remove(fname)
     os.remove(name)
     return hash_tar
@@ -76,7 +81,8 @@ def test_good_download():
     res = s.get(url)
     assert res.status_code == 200
     assert hash_content(res.content) == hash_tar(tname)
-
+    assert res.headers["Content-Type"] == "application/x-tar+gzip"
+    
 def test_upload_twice():
     s = log_in_session()
     url = generate_url()
@@ -137,10 +143,14 @@ def test_no_data_collected():
     url = generate_url()
     res = s.get(url)
     assert res.status_code == 404
-    
 
 def test_device_try_download():
-    assert 0
+    simd = SimDevice()
+    ts = requests.get(API_BASE + "/timestamp").text
+    head = {"Authorization": simd.ticket(ts)}
+    
+    res = requests.get(generate_url(simd.id), headers=head)
+    assert res.status_code == 403
 
 if __name__ == "__main__":
     pytest.main(["./11_test.py"])
