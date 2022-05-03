@@ -118,6 +118,6 @@ def sign_device(devid: uuid.UUID):
     with tarfile.open(str(devid)+'.tar', "w") as tar:
         tar.add(name=os.path.join(tmp_dir, 'id'), arcname='id')
         tar.add(name=os.path.join(tmp_dir, 'device.key'), arcname='device.key')
-        tar.add(name=os.path.join(tmp_dir, 'device.key'), arcname='device.key')
+        tar.add(name=os.path.join(tmp_dir, 'device.crt'), arcname='device.crt')
         tar.add(name='cloud.pub', arcname='ca.pub')
     shutil.rmtree(tmp_dir)
