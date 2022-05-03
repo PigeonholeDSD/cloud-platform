@@ -14,12 +14,14 @@ import random
 import pytest
 import requests
 from names import *
-import simdev
+from simdev import *
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-def generate_url():
-    return API_BASE + "/device/" + str(uuid.uuid4()) + "/calibration"
+def generate_url(idd=None):
+    if idd == None:
+        idd = uuid.uuid4()
+    return API_BASE + "/device/" + str(idd) + "/calibration"
 
 def log_in_session() -> requests.Session:
     s = requests.Session()
@@ -55,7 +57,7 @@ def hash_tar(name: str):
     with tarfile.open(name, "r:gz") as ftar:
         ftar.extractall()
         for fname in ftar.getnames():
-            hash_tar[fname] = simdev.hash_file(fname)
+            hash_tar[fname] = hash_file(fname)
             os.remove(fname)
     os.remove(name)
     return hash_tar
@@ -80,6 +82,25 @@ def test_good_upload2():
     hash_tar("t2.tgz")
     assert res.status_code == 200
 
+def test_signature_invalid():
+    simd = SimDevice()
+    url = generate_url(simd.id)
+    ts = requests.get(API_BASE + "/timestamp").text
+    
+    tname = "t1.tgz"
+    generate_tgz(tname)
+    files = {"calibration": ("c1", open(tname, "rb"),\
+        "application/x-tar+gzip", {"Expires": "0"})}
+    head = {"Authorization": simd.ticket(ts),\
+        "Signature": simd.sign_file(tname)+"233"}
+    os.remove(tname)
+    
+    res = requests.put(url, files=files, headers=head)
+    assert res.status_code == 400
+    
+    res = requests.head(url, headers=head)
+    assert res.status_code == 404
+    
 def test_bad_request():
     s = log_in_session()
     url = generate_url()

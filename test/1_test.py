@@ -9,8 +9,11 @@
 
 import time
 import pytest
+import tarfile
+import random
 import requests
 from names import *
+from simdev import *
     
 def test_colon_exists():
     r = requests.Session()
@@ -41,6 +44,45 @@ def test_different_second_return_different_valve():
 def test_response_status_code():
     res = requests.get(API_BASE + "/timestamp")
     assert res.status_code == 200
+
+def generate_url(idd=None):
+    if idd == None:
+        idd = uuid.uuid4()
+    return API_BASE + "/device/" + str(idd) + "/calibration"
+
+def generate_file(name: str):
+    with open(name, "w") as f:
+        for _ in range(10):
+            f.write(str(random.randint(1,1000000))+"\n")
+
+def generate_tgz(name: str):
+    n_file = random.randint(1,5)
+    with tarfile.open(name, "w:gz") as ftar:
+        for i in range(n_file):
+            fname = name[:-4] + str(i) + ".csv"
+            generate_file(fname)
+            ftar.add(fname)
+            os.remove(fname)
+
+def test_timestamp_timeout():
+    simd = SimDevice()
+    url = generate_url(simd.id)
+    ts = "1651599134:6699d446784646870e46830bf5ea1ad3b9f06d2b"
+    print(ts)
+    
+    tname = "t1.tgz"
+    generate_tgz(tname)
+    files = {"calibration": ("c1", open(tname, "rb"),\
+        "application/x-tar+gzip", {"Expires": "0"})}
+    head = {"Authorization": simd.ticket(ts),\
+        "Signature": simd.sign_file(tname)}
+    os.remove(tname)
+    
+    res = requests.put(url, files=files, headers=head)
+    assert res.status_code == 400
+    
+    res = requests.head(url, headers=head)
+    assert res.status_code == 404
 
 if __name__ == "__main__":
     pytest.main(["./1_test.py"])
