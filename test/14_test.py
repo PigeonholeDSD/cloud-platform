@@ -4,6 +4,9 @@
 # @Author  : Xiaoquan Xu
 # @File    : 14_test.py
 
+# Test 14.Log in to the current session
+# `POST /session`
+
 import json
 import pytest
 import requests

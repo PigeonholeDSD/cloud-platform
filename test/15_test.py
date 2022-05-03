@@ -4,6 +4,9 @@
 # @Author  : Xiaoquan Xu
 # @File    : 15_test.py
 
+# Test 15.Log out
+# `DELETE /session`
+
 import pytest
 import requests
 from names import *
