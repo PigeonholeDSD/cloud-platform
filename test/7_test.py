@@ -8,7 +8,6 @@
 # `DELETE /device/<uuid>/calibration`
 
 import os
-import json
 import uuid
 import tarfile
 import random

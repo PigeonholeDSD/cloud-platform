@@ -4,6 +4,9 @@
 # @Author  : Xiaoquan Xu
 # @File    : 6_test.py
 
+# Test 6.Upload new calibration data to the cloud platform
+# `PUT /device/<uuid>/calibration`
+
 import os
 import uuid
 import tarfile

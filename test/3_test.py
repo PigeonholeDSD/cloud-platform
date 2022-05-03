@@ -4,14 +4,20 @@
 # @Author  : Xiaoquan Xu
 # @File    : 3_test.py
 
+# Test 3.Get the contact email
+# `GET /device/<uuid>/email`
+
 import uuid
 import json
 import pytest
 import requests
 from names import *
+from simdev import *
 
-def generate_url():
-    return API_BASE + "/device/" + str(uuid.uuid4()) + "/email"
+def generate_url(idd=None):
+    if idd == None:
+        idd = uuid.uuid4()
+    return API_BASE + "/device/" + str(idd) + "/email"
 
 def log_in_session() -> requests.Session:
     s = requests.Session()
@@ -25,6 +31,20 @@ def set_email(body_email):
     s.post(url, json=body_email)
     return s, url
 
+def test_device():
+    simd = SimDevice()
+    
+    ts = requests.get(API_BASE + "/timestamp").text
+    head = {"Authorization": simd.ticket(ts)}
+    body_email = {"email": "pigeonholedevice@ciel.dev"}
+    url = generate_url(simd.id)
+    res = requests.post(url, json=body_email, headers=head)
+    assert res.status_code == 200
+    
+    res = requests.get(url, headers=head)
+    assert res.status_code == 200
+    assert json.loads(res.text) == body_email
+    
 def test_good_get_email():
     body_email = {"email": "pigeonhole@ciel.dev"}
     s, url = set_email(body_email)

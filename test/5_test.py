@@ -18,8 +18,10 @@ from simdev import *
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-def generate_url():
-    return API_BASE + "/device/" + str(uuid.uuid4()) + "/calibration"
+def generate_url(idd=None):
+    if idd == None:
+        idd = uuid.uuid4()
+    return API_BASE + "/device/" + str(idd) + "/calibration"
 
 def log_in_session() -> requests.Session:
     s = requests.Session()
@@ -101,6 +103,35 @@ def test_updown_repeatedly():
     
     s4 = log_in_session()
     res = s4.head(url)
+    assert res.status_code == 404
+
+
+def test_updown_repeatedly_device():
+    simd = SimDevice()
+    url = generate_url(simd.id)
+    ts = requests.get(API_BASE + "/timestamp").text
+    
+    tname = "t1.tgz"
+    generate_tgz(tname)
+    files = {"calibration": ("c1", open(tname, "rb"),\
+        "application/x-tar+gzip", {"Expires": "0"})}
+    head = {"Authorization": simd.ticket(ts),\
+        "Signature": simd.sign_file(tname)}
+    os.remove(tname)
+    
+    res = requests.put(url, files=files, headers=head)
+    assert res.status_code == 200
+    
+    res = requests.head(url, headers=head)
+    assert res.status_code == 200
+    
+    res = requests.delete(url, headers=head)
+    assert res.status_code == 200
+    
+    res = requests.delete(url, headers=head)
+    assert res.status_code == 200
+    
+    res = requests.head(url, headers=head)
     assert res.status_code == 404
 
 if __name__ == "__main__":

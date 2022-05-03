@@ -4,11 +4,14 @@
 # @Author  : Xiaoquan Xu
 # @File    : 1_test.py
 
+# Test 1.Request a cloud-signed time stamp
+# `GET /timestamp`
+
 import time
 import pytest
 import requests
 from names import *
-
+    
 def test_colon_exists():
     r = requests.Session()
     s = r.get(API_BASE + "/timestamp")

@@ -4,19 +4,34 @@
 # @Author  : Xiaoquan Xu
 # @File    : 2_test.py
 
+# Test 2.Set the contact email
+# `POST /device/<uuid>/email`
+
 import uuid
 import pytest
 import requests
 from names import *
+from simdev import *
 
-def generate_url():
-    return API_BASE + "/device/" + str(uuid.uuid4()) + "/email"
+def generate_url(idd=None):
+    if idd == None:
+        idd = uuid.uuid4()
+    return API_BASE + "/device/" + str(idd) + "/email"
 
 def log_in_session() -> requests.Session:
     s = requests.Session()
     body = {"username": USERNAME, "password": PASSWORD}
     s.post(API_BASE + "/session", json=body)
     return s
+
+def test_device():
+    simd = SimDevice()
+    ts = requests.get(API_BASE + "/timestamp").text
+    head = {"Authorization": simd.ticket(ts)}
+    body_email = {"email": "pigeonholedevice@ciel.dev"}
+    url = generate_url(simd.id)
+    res = requests.post(url, json=body_email, headers=head)
+    assert res.status_code == 200
 
 def test_response_status_code():
     s = log_in_session()
