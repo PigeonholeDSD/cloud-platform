@@ -26,6 +26,8 @@ app.config.update({
     'PERMANENT_SESSION_LIFETIME': timedelta(hours=2),
     'TICKET_LIFETIME': 60*60,
     'CLOUD_KEY': crypto.cloud_key(),
+    'SESSION_COOKIE_SAMESITE': 'None',
+    'SESSION_COOKIE_SECURE': True,
 })
 
 app.register_blueprint(admin.bp)
