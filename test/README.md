@@ -57,7 +57,7 @@ If two requests were sent within a second, it will return the same value.
 
 > For example: `1650375337:6bce5953a9506d6c14f2522fd6228afbee394da3`
 
-- [x] The signed timestamp should be valid for only 1 hour.
+- [x] The signed timestamp should be valid for only 1 hour. If timeout, it should return 401.
 
 - [x] It should always return 200.
 

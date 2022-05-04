@@ -79,8 +79,10 @@ def test_timestamp_timeout():
     os.remove(tname)
     
     res = requests.put(url, files=files, headers=head)
-    assert res.status_code == 400
+    assert res.status_code == 401
     
+    ts = requests.get(API_BASE + "/timestamp").text
+    head = {"Authorization": simd.ticket(ts)}
     res = requests.head(url, headers=head)
     assert res.status_code == 404
 
