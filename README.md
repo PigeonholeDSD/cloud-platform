@@ -17,7 +17,16 @@ git clone https://github.com/PigeonholeDSD/cloud-platform.git
 cd cloud-platform/
 pip install -r requirements.txt
 git submodule update --init
-git 
+pip install -r algo/requirements.txt
+```
+
+Because we use submodule to manage database and algorithm module, if there're new commits, sync and commit with:
+
+```
+git submodule update --remote --merge
+git commit -am 'chore: sync <mod>'
+```
+
 Run in the development mode:
 
 ```
