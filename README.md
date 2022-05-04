@@ -17,8 +17,7 @@ git clone https://github.com/PigeonholeDSD/cloud-platform.git
 cd cloud-platform/
 pip install -r requirements.txt
 git submodule update --init
-```
-
+git 
 Run in the development mode:
 
 ```
