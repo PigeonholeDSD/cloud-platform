@@ -95,7 +95,7 @@ def check_file(file: str, sig: str, devid: uuid.UUID) -> None:
         sig, pubkey, cert = sig.split(':')
         hash = hash_file(file)
         if not verify(hash, sig, pubkey):
-            raise error.SignatureError('Invalid file signautre')
+            raise error.SignatureError('Invalid file signature')
         if not verify(pubkey+str(devid), cert):
             raise error.SignatureError('Invalid file pubkey')
     except error.DSDException as e:
