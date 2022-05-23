@@ -15,8 +15,8 @@ bp = Blueprint('device', __name__, url_prefix='/device')
 
 
 @bp.get('<uuid:devid>/email')
+@check()
 def get_email(devid: uuid.UUID):
-    logged_in(devid)
     email = db.device.get(devid).email
     if not email:
         return '', 404
@@ -26,8 +26,8 @@ def get_email(devid: uuid.UUID):
 
 
 @bp.post('<uuid:devid>/email')
+@check()
 def post_email(devid: uuid.UUID):
-    logged_in(devid)
     data = APIRequestBody({
         'email': str,
     })
@@ -39,18 +39,17 @@ def post_email(devid: uuid.UUID):
 
 
 @bp.delete('<uuid:devid>/email')
+@check()
 def delete_email(devid: uuid.UUID):
-    logged_in(devid)
     db.device.get(devid).email = None
     return '', 200
 
 
 @bp.get('<uuid:devid>/calibration')
+@check(admin_only=True)
 def get_calibration(devid: uuid.UUID):
-    logged_in(devid)
     if request.method == 'HEAD':
         return '', (200 if db.device.get(devid).calibration else 404)
-    admin_only()
     path = db.device.get(devid).calibration
     if not path:
         return '', 404
@@ -71,8 +70,8 @@ def get_calibration(devid: uuid.UUID):
 
 
 @bp.put('<uuid:devid>/calibration')
+@check()
 def put_calibration(devid: uuid.UUID):
-    logged_in(devid)
     file = request.files.get('calibration')
     if not file:
         raise error.APISyntaxError('No file uploaded')
@@ -100,15 +99,15 @@ def put_calibration(devid: uuid.UUID):
 
 
 @bp.delete('<uuid:devid>/calibration')
+@check()
 def delete_calibration(devid: uuid.UUID):
-    logged_in(devid)
     db.device.get(devid).calibration = None
     return '', 200
 
 
 @bp.get('<uuid:devid>/model')
+@check()
 def get_model(devid: uuid.UUID):
-    logged_in(devid)
     model = db.device.get(devid).model
     file = model or db.model.getBase()
     response = make_response(send_file(file, 'application/octet-stream'), 200)
@@ -123,8 +122,8 @@ def get_model(devid: uuid.UUID):
 
 
 @bp.put('<uuid:devid>/model')
+@check(admin_only=True)
 def put_model(devid: uuid.UUID):
-    admin_only()
     file = request.files.get('model')
     if not file:
         raise error.APISyntaxError('No file uploaded')
@@ -136,15 +135,15 @@ def put_model(devid: uuid.UUID):
 
 
 @bp.delete('<uuid:devid>/model')
+@check()
 def delete_model(devid: uuid.UUID):
-    logged_in(devid)
     db.device.get(devid).model = None
     return '', 200
 
 
 @bp.delete('<uuid:devid>')
+@check()
 def delete_device(devid: uuid.UUID):
-    admin_only()
     data = APIRequestBody({
         'ban': bool
     })

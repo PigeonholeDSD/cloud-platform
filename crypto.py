@@ -77,17 +77,17 @@ def check_ticket(ticket: str, devid: uuid.UUID) -> None:
         t, tsig, sig, pubkey, cert = ticket.split(':')
         ts = t+':'+tsig
         if timestamp(int(t)) != ts:
-            raise error.NotLoggedIn('Invalid timestamp in device ticket')
+            raise error.UnauthorizedError('Invalid timestamp in device ticket')
         if int(t)+current_app.config['TICKET_LIFETIME'] < time.time():
-            raise error.NotLoggedIn('Timestamp expired')
+            raise error.UnauthorizedError('Timestamp expired')
         if not verify(ts, sig, pubkey):
-            raise error.NotLoggedIn('Invalid timestamp signature')
+            raise error.UnauthorizedError('Invalid timestamp signature')
         if not verify(pubkey+str(devid), cert):
-            raise error.NotLoggedIn('Invalid pubkey')
-    except error.DSDException as e:
+            raise error.UnauthorizedError('Invalid pubkey')
+    except error.UnauthorizedError as e:
         raise e
     except Exception:
-        raise error.NotLoggedIn('Invalid device ticket')
+        raise error.UnauthorizedError('Invalid device ticket')
 
 
 def check_file(file: str, sig: str, devid: uuid.UUID) -> None:

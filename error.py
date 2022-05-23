@@ -11,7 +11,7 @@ class APISyntaxError(DSDException):
         }), 400
 
 
-class NotLoggedIn(DSDException):
+class UnauthorizedError(DSDException):
     @staticmethod
     def handler(e):
         return jsonify({
@@ -19,13 +19,13 @@ class NotLoggedIn(DSDException):
         }), 401
 
 
-class Forbidden(DSDException):
+class ForbiddenError(DSDException):
     @staticmethod
     def handler(e):
         return '', 403
 
 
-class SignatureError(DSDException):
+class BadSignatureError(DSDException):
     @staticmethod
     def handler(e):
         return jsonify({

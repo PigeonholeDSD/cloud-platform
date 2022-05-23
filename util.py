@@ -7,6 +7,7 @@ from flask import session, request
 import error
 import crypto
 import db.admin
+from functools import wraps
 
 
 class APIRequestBody(object):
@@ -41,6 +42,17 @@ def is_admin() -> bool:
     return db.admin.check(session.get('user', ''), session.get('pass', ''))
 
 
-def admin_only() -> None:
-    if not is_admin():
-        raise error.Forbidden()
+def check(admin_only: bool=False):
+    def check_decorator(f):
+        @wraps(f)
+        def wrapped_function(*args, **kwargs):
+            if is_admin():
+                return f(*args, **kwargs)
+            if 'devid' not in kwargs:
+                raise error.UnauthorizedError()
+            crypto.check_ticket(request.headers.get('Authorization', ''), kwargs['devid'])
+            if (admin_only):
+                raise error.ForbiddenError()
+            return f(*args, **kwargs)
+        return wrapped_function
+    return check_decorator

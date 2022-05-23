@@ -24,7 +24,7 @@ def create_session():
         })
         return '', 200
     else:
-        raise error.Forbidden()
+        raise error.ForbiddenError()
 
 
 @bp.delete('/session')
@@ -35,8 +35,9 @@ def session_delete():
 
 
 @bp.put('/model/base')
+@check(admin_only=True)
 def put_model_base():
-    admin_only()
+    # admin_only()
     file = request.files.get('model')
     if not file:
         raise error.APISyntaxError('No file uploaded')
