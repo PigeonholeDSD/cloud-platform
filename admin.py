@@ -11,7 +11,7 @@ import db.device
 bp = Blueprint('admin', __name__)
 
 
-@bp.post('/session')
+@bp.post('/api/session')
 def create_session():
     data = APIRequestBody({
         'username': str,
@@ -27,7 +27,7 @@ def create_session():
         raise error.ForbiddenError()
 
 
-@bp.delete('/session')
+@bp.delete('/api/session')
 def session_delete():
     session.pop('user', None)
     session.pop('pass', None)
