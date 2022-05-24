@@ -11,7 +11,7 @@ from util import *
 import db.device
 import db.model
 
-bp = Blueprint('device', __name__, url_prefix='/device')
+bp = Blueprint('device', __name__, url_prefix='/api/device')
 
 
 @bp.get('<uuid:devid>/email')

@@ -36,7 +36,7 @@ app.register_error_handler(error.APISyntaxError, error.APISyntaxError.handler)
 app.register_error_handler(error.UnauthorizedError, error.UnauthorizedError.handler)
 app.register_error_handler(error.ForbiddenError, error.ForbiddenError.handler)
 app.register_error_handler(error.BadSignatureError, error.BadSignatureError.handler)
-app.add_url_rule('/timestamp', view_func=crypto.timestamp)
+app.add_url_rule('/api/timestamp', view_func=crypto.timestamp)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
