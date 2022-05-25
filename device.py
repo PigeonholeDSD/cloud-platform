@@ -92,7 +92,7 @@ def put_calibration(devid: uuid.UUID):
         except:
             raise error.APISyntaxError('Bad tarball')
         db.device.get(devid).calibration = path
-        train.train(db.device.get(devid))
+        # train.train(db.device.get(devid))
     finally:
         shutil.rmtree(path)
     return '', 200
@@ -105,10 +105,11 @@ def delete_calibration(devid: uuid.UUID):
     return '', 200
 
 
-@bp.get('<uuid:devid>/model')
+@bp.get('<uuid:devid>/model/<str: algo>')
 @check()
-def get_model(devid: uuid.UUID):
-    model = db.device.get(devid).model
+@validate_algo()
+def get_model(devid: uuid.UUID, algo: str):
+    model = db.device.get(devid).model[algo]
     file = model or db.model.getBase()
     response = make_response(send_file(file, 'application/octet-stream'), 200)
     response.headers['Signature'] = crypto.sign_file(file)
