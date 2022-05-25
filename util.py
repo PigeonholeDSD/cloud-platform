@@ -61,7 +61,8 @@ def validate_algo():
     def algo_decorator(f):
         @wraps(f)
         def wrapped_function(*args, **kwargs):
-            algo_list = json.load('algo/algo.json')
+            with open('algo/algo.json', 'r') as f:
+                algo_list = json.load(f)
             if kwargs['algo'] not in algo_list.keys():
                 raise error.NotFoundError('Algorithm not found.')
             return f(*args, **kwargs)
