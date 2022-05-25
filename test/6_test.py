@@ -98,8 +98,8 @@ def test_signature_invalid():
     res = requests.put(url, files=files, headers=head)
     assert res.status_code == 400
     
-    res = requests.head(url, headers=head)
-    assert res.status_code == 404
+    res = requests.get(url, headers=head)
+    assert res.status_code == 403
     
 def test_bad_request():
     s = log_in_session()
