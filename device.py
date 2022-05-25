@@ -138,10 +138,17 @@ def put_model(devid: uuid.UUID, algo: str):
 
 @bp.delete('<uuid:devid>/model')
 @check()
-def delete_model(devid: uuid.UUID):
+def delete_all_model(devid: uuid.UUID):
     algo_list = json.load('algo/algo.json')
     for algo in algo_list.keys():
         db.device.get(devid).model[algo] = None
+    return '', 200
+
+@bp.delete('<uuid:devid>/model/<str: algo>')
+@check()
+@validate_algo()
+def delete_model(devid: uuid.UUID, algo: str):
+    db.device.get(devid).model[algo] = None
     return '', 200
 
 
