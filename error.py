@@ -31,3 +31,10 @@ class BadSignatureError(DSDException):
         return jsonify({
             'error': str(e),
         }), 400
+
+class NotFoundError(DSDException):
+    @staticmethod
+    def handler(e):
+        return jsonify({
+            'error': str(e)
+        }), 404
