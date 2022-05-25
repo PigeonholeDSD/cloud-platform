@@ -155,10 +155,5 @@ def delete_model(devid: uuid.UUID, algo: str):
 @bp.delete('<uuid:devid>')
 @check()
 def delete_device(devid: uuid.UUID):
-    data = APIRequestBody({
-        'ban': bool
-    })
     db.device.remove(devid)
-    if data.ban:
-        db.device.get(devid).banned = True
     return '', 200
