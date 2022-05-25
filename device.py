@@ -9,7 +9,6 @@ import error
 import train
 from util import *
 import db.device
-import db.model
 
 bp = Blueprint('device', __name__, url_prefix='/api/device')
 
@@ -110,7 +109,7 @@ def delete_calibration(devid: uuid.UUID):
 @validate_algo()
 def get_model(devid: uuid.UUID, algo: str):
     model = db.device.get(devid).model[algo]
-    file = model or db.model.getBase()
+    file = model or db.device.get(uuid.UUID(int=0)).model[algo]
     response = make_response(send_file(file, 'application/octet-stream'), 200)
     response.headers['Signature'] = crypto.sign_file(file)
     if model:
