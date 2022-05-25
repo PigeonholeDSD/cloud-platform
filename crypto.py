@@ -101,7 +101,7 @@ def check_file(file: str, sig: str, devid: uuid.UUID) -> None:
     except error.DSDException as e:
         raise e
     except Exception:
-        raise error.SignatureError('Invalid signature')
+        raise error.BadSignatureError('Invalid signature')
 
 
 def sign_device(devid: uuid.UUID):
