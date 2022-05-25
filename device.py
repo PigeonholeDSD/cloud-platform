@@ -122,15 +122,15 @@ def get_model(devid: uuid.UUID, algo: str):
     return response
 
 
-@bp.put('<uuid:devid>/model')
+@bp.put('<uuid:devid>/model/<str: algo>')
 @check(admin_only=True)
-def put_model(devid: uuid.UUID):
+def put_model(devid: uuid.UUID, algo: str):
     file = request.files.get('model')
     if not file:
         raise error.APISyntaxError('No file uploaded')
     path = os.path.join(mkdtemp(), 'model')
     file.save(path)
-    db.device.get(devid).model = path
+    db.device.get(devid).model[algo] = path
     shutil.rmtree(os.path.dirname(path))
     return '', 200
 
