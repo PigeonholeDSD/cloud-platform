@@ -12,6 +12,7 @@ import error
 import admin
 import crypto
 import device
+import model
 from util import *
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -32,6 +33,7 @@ app.config.update({
 
 app.register_blueprint(admin.bp)
 app.register_blueprint(device.bp)
+app.register_blueprint(model.bp)
 app.register_error_handler(error.APISyntaxError, error.APISyntaxError.handler)
 app.register_error_handler(error.UnauthorizedError, error.UnauthorizedError.handler)
 app.register_error_handler(error.ForbiddenError, error.ForbiddenError.handler)
