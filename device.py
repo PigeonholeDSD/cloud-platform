@@ -124,6 +124,7 @@ def get_model(devid: uuid.UUID, algo: str):
 
 @bp.put('<uuid:devid>/model/<str: algo>')
 @check(admin_only=True)
+@validate_algo()
 def put_model(devid: uuid.UUID, algo: str):
     file = request.files.get('model')
     if not file:
