@@ -56,3 +56,14 @@ def check(admin_only: bool=False):
             return f(*args, **kwargs)
         return wrapped_function
     return check_decorator
+
+def validate_algo():
+    def algo_decorator(f):
+        @wraps(f)
+        def wrapped_function(*args, **kwargs):
+            algo_list = json.load('algo/algo.json')
+            if kwargs['algo'] not in algo_list.keys():
+                raise error.NotFoundError('Algorithm not found.')
+            return f(*args, **kwargs)
+        return wrapped_function
+    return algo_decorator
