@@ -105,7 +105,7 @@ def delete_calibration(devid: uuid.UUID):
     return '', 200
 
 
-@bp.get('<uuid:devid>/model/<str: algo>')
+@bp.get('<uuid:devid>/model/<string:algo>')
 @check()
 @validate_algo()
 def get_model(devid: uuid.UUID, algo: str):
@@ -122,7 +122,7 @@ def get_model(devid: uuid.UUID, algo: str):
     return response
 
 
-@bp.put('<uuid:devid>/model/<str: algo>')
+@bp.put('<uuid:devid>/model/<string:algo>')
 @check(admin_only=True)
 @validate_algo()
 def put_model(devid: uuid.UUID, algo: str):
@@ -144,7 +144,7 @@ def delete_all_model(devid: uuid.UUID):
         db.device.get(devid).model[algo] = None
     return '', 200
 
-@bp.delete('<uuid:devid>/model/<str: algo>')
+@bp.delete('<uuid:devid>/model/<string:algo>')
 @check()
 @validate_algo()
 def delete_model(devid: uuid.UUID, algo: str):
