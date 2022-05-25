@@ -68,7 +68,6 @@ def test_timestamp_timeout():
     simd = SimDevice()
     url = generate_url(simd.id)
     ts = "1651599134:6699d446784646870e46830bf5ea1ad3b9f06d2b"
-    print(ts)
     
     tname = "t1.tgz"
     generate_tgz(tname)
@@ -84,7 +83,21 @@ def test_timestamp_timeout():
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
     res = requests.head(url, headers=head)
-    assert res.status_code == 404
+    assert res.status_code == 403
+    
+    res = requests.get(url, headers=head)
+    assert res.status_code == 401
+
+def test_timestamp_timeout2():
+    simd = SimDevice()
+    url = generate_url(simd.id)[:-12] + "/email"
+    ts = "1651599134:6699d446784646870e46830bf5ea1ad3b9f06d2b"
+    
+    head = {"Authorization": simd.ticket(ts)}
+    body_email = {"email": "pigeonholetest@ciel.dev"}
+    
+    res = requests.post(url, json=body_email, headers=head)
+    assert res.status_code == 401
 
 if __name__ == "__main__":
     pytest.main(["./1_test.py"])

@@ -123,7 +123,7 @@ def test_updown_repeatedly_device():
     assert res.status_code == 200
     
     res = requests.head(url, headers=head)
-    assert res.status_code == 200
+    assert res.status_code == 403 #changed in 2.0
     
     res = requests.delete(url, headers=head)
     assert res.status_code == 200
@@ -132,7 +132,7 @@ def test_updown_repeatedly_device():
     assert res.status_code == 200
     
     res = requests.head(url, headers=head)
-    assert res.status_code == 404
+    assert res.status_code == 403 #changed in 2.0
 
 if __name__ == "__main__":
     pytest.main(["./5_test.py"])
