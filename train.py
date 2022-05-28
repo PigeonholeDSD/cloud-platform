@@ -1,5 +1,7 @@
 # python3 train.py <data_dir> <new_model> <base_model>
 
+import json
+import os
 import time
 import uuid
 import shutil
@@ -8,7 +10,6 @@ import threading
 import subprocess
 from tempfile import mkdtemp
 import db.device
-import db.model
 
 _tasks: dict = {}
 _stops: dict = {}
@@ -20,12 +21,14 @@ def notify(device: db.device.Device) -> None:
             f'Sending email to {device.email}, notifying new model for {device.id}')
 
 
-def __train(device: db.device.Device, stop: threading.Event) -> None:
+def __train(device: db.device.Device, algo_info: dict, stop: threading.Event) -> None:
     print(f'Starting training for {device.id}')
     new_model = os.path.join(mkdtemp(), 'model')
+    algo = algo_info['name']
+    entry_point = algo_info['entry_point']['train']
     proc = subprocess.Popen(
-        ['/usr/bin/env', 'python3', 'train.py', device.calibration or '',
-            new_model, device.model or db.model.getBase()],
+        [*entry_point, device.calibration or '',
+            new_model, device.model[algo] or db.device.get(uuid.UUID(int=0)).model[algo]],
         cwd='algo'
     )
     while not stop.is_set():
@@ -49,7 +52,7 @@ def __train(device: db.device.Device, stop: threading.Event) -> None:
     shutil.rmtree(os.path.dirname(new_model))
 
 
-def _train(device: db.device.Device) -> None:
+def _train(device: db.device.Device, algo_info: dict) -> None:
     if device.id in _tasks:
         while _tasks[device.id].is_alive():
             print(
@@ -60,10 +63,15 @@ def _train(device: db.device.Device) -> None:
     _tasks[device.id] = threading.Thread(
         name=str(device.id),
         target=__train,
-        args=(device, _stops[device.id])
+        args=(device, algo_info, _stops[device.id])
     )
     _tasks[device.id].start()
 
 
-def train(device: db.device.Device) -> None:
-    threading.Thread(target=_train, args=(device,)).start()
+def train(device: db.device.Device, algo: str) -> None:
+    with open('algo/algo.json', 'r') as f:
+        algo_list = json.load(f)
+    algo_info = algo_list[algo]
+    for i in range(len(algo_info['entry_point']['train'])):
+        algo_info['entry_point']['train'][i] = algo_info['entry_point']['train'][i].replace('$ALGO', os.getenv('ALGO'))
+    threading.Thread(target=_train, args=(device, algo_info,)).start()
