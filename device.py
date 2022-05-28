@@ -47,11 +47,11 @@ def delete_email(devid: uuid.UUID):
 @bp.get('<uuid:devid>/calibration')
 @check(admin_only=True)
 def get_calibration(devid: uuid.UUID):
-    if request.method == 'HEAD':
-        return '', (200 if db.device.get(devid).calibration else 404)
     path = db.device.get(devid).calibration
     if not path:
-        return '', 404
+        raise error.NotFoundError('Calibration file not found')
+    if not is_admin():
+        raise error.ForbiddenError()
     tmp_dir = mkdtemp()
     tmp_path = os.path.join(tmp_dir, 'calibration.tar.gz')
     with tarfile.open(tmp_path, "w:gz") as tar:
