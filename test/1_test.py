@@ -86,7 +86,7 @@ def test_timestamp_timeout():
     assert res.status_code == 403
     
     res = requests.get(url, headers=head)
-    assert res.status_code == 401
+    assert res.status_code == 403
 
 def test_timestamp_timeout2():
     simd = SimDevice()
