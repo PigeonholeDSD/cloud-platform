@@ -68,3 +68,13 @@ def validate_algo():
             return f(*args, **kwargs)
         return wrapped_function
     return algo_decorator
+
+def validate_uuid():
+    def uuid_decorator(f):
+        @wraps(f)
+        def wrapped_function(*args, **kwargs):
+            if kwargs['devid'] == uuid.UUID(int=0):
+                raise error.NotFoundError('Device not found')
+            return f(*args, **kwargs)
+        return wrapped_function
+    return uuid_decorator

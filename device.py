@@ -15,6 +15,7 @@ bp = Blueprint('device', __name__, url_prefix='/api/device')
 
 @bp.get('<uuid:devid>/email')
 @check()
+@validate_uuid()
 def get_email(devid: uuid.UUID):
     email = db.device.get(devid).email
     if not email:
@@ -26,6 +27,7 @@ def get_email(devid: uuid.UUID):
 
 @bp.post('<uuid:devid>/email')
 @check()
+@validate_uuid()
 def post_email(devid: uuid.UUID):
     data = APIRequestBody({
         'email': str,
@@ -39,6 +41,7 @@ def post_email(devid: uuid.UUID):
 
 @bp.delete('<uuid:devid>/email')
 @check()
+@validate_uuid()
 def delete_email(devid: uuid.UUID):
     db.device.get(devid).email = None
     return '', 200
@@ -46,6 +49,7 @@ def delete_email(devid: uuid.UUID):
 
 @bp.get('<uuid:devid>/calibration')
 @check(admin_only=True)
+@validate_uuid()
 def get_calibration(devid: uuid.UUID):
     path = db.device.get(devid).calibration
     if not path:
@@ -70,6 +74,7 @@ def get_calibration(devid: uuid.UUID):
 
 @bp.put('<uuid:devid>/calibration')
 @check()
+@validate_uuid()
 def put_calibration(devid: uuid.UUID):
     file = request.files.get('calibration')
     if not file:
@@ -99,6 +104,7 @@ def put_calibration(devid: uuid.UUID):
 
 @bp.delete('<uuid:devid>/calibration')
 @check()
+@validate_uuid()
 def delete_calibration(devid: uuid.UUID):
     db.device.get(devid).calibration = None
     return '', 200
@@ -106,6 +112,7 @@ def delete_calibration(devid: uuid.UUID):
 
 @bp.get('<uuid:devid>/model/<string:algo>')
 @check()
+@validate_uuid()
 @validate_algo()
 def get_model(devid: uuid.UUID, algo: str):
     model = db.device.get(devid).model[algo]
@@ -123,6 +130,7 @@ def get_model(devid: uuid.UUID, algo: str):
 
 @bp.put('<uuid:devid>/model/<string:algo>')
 @check(admin_only=True)
+@validate_uuid()
 @validate_algo()
 def put_model(devid: uuid.UUID, algo: str):
     file = request.files.get('model')
@@ -137,6 +145,7 @@ def put_model(devid: uuid.UUID, algo: str):
 
 @bp.delete('<uuid:devid>/model')
 @check()
+@validate_uuid()
 def delete_all_model(devid: uuid.UUID):
     algo_list = json.load('algo/algo.json')
     for algo in algo_list.keys():
@@ -145,6 +154,7 @@ def delete_all_model(devid: uuid.UUID):
 
 @bp.delete('<uuid:devid>/model/<string:algo>')
 @check()
+@validate_uuid()
 @validate_algo()
 def delete_model(devid: uuid.UUID, algo: str):
     db.device.get(devid).model[algo] = None
@@ -153,6 +163,7 @@ def delete_model(devid: uuid.UUID, algo: str):
 
 @bp.delete('<uuid:devid>')
 @check()
+@validate_uuid()
 def delete_device(devid: uuid.UUID):
     db.device.remove(devid)
     return '', 200
