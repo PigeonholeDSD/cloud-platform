@@ -23,7 +23,6 @@ def test_get_algo():
     url = API_BASE + "/models"
     res = requests.get(url)
     print(res)
-    assert 0
     return res
     
 def generate_url(idd=None):
@@ -88,8 +87,6 @@ def test_good_check_model():
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
     res = requests.get(generate_url(simd.id), headers=head)
-    print(res.headers["Last-Modified"])
-    print(time.strftime('%a, %d %b %Y %H', time.gmtime(time.time())))
     # assert res.headers["Last-Modified"].find(time.strftime(\
     #     '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
     # assert res.content == b""
