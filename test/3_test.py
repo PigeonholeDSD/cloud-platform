@@ -55,6 +55,12 @@ def test_good_get_email():
     print(body_email)
     assert json.loads(res.text) == body_email
     
+def test_nil_uuid():
+    s = log_in_session()
+    url = generate_url("00000000-0000-0000-0000-000000000000")
+    res = s.get(url)
+    assert res.status_code == 404
+    
 def test_set_again():
     body_email = {"email": "pigeonholee@ciel.dev"}
     s, url = set_email(body_email)
