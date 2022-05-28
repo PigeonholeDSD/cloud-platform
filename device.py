@@ -51,7 +51,7 @@ def get_calibration(devid: uuid.UUID):
     if not path:
         raise error.NotFoundError('Calibration file not found')
     if not is_admin():
-        raise error.ForbiddenError()
+        raise error.ForbiddenError('Permission denied')
     tmp_dir = mkdtemp()
     tmp_path = os.path.join(tmp_dir, 'calibration.tar.gz')
     with tarfile.open(tmp_path, "w:gz") as tar:

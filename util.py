@@ -52,7 +52,7 @@ def check(admin_only: bool=False):
                 raise error.UnauthorizedError()
             crypto.check_ticket(request.headers.get('Authorization', ''), kwargs['devid'])
             if (admin_only):
-                raise error.ForbiddenError()
+                raise error.ForbiddenError('Permission denied')
             return f(*args, **kwargs)
         return wrapped_function
     return check_decorator

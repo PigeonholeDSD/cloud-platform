@@ -23,7 +23,7 @@ def create_session():
         })
         return '', 200
     else:
-        raise error.ForbiddenError()
+        raise error.ForbiddenError('Permission denied')
 
 
 @bp.delete('/api/session')
