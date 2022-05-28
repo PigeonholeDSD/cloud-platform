@@ -133,6 +133,25 @@ def test_updown_repeatedly_device():
     
     res = requests.head(url, headers=head)
     assert res.status_code == 403 #changed in 2.0
+    
+def test_wrong_device():
+    simd = SimDevice()
+    url = generate_url(simd.id)
+    ts = requests.get(API_BASE + "/timestamp").text
+    
+    tname = "t1.tgz"
+    generate_tgz(tname)
+    files = {"calibration": ("c1", open(tname, "rb"),\
+        "application/x-tar+gzip", {"Expires": "0"})}
+    head = {"Authorization": simd.ticket(ts)[2:],\
+        "Signature": simd.sign_file(tname)}
+    os.remove(tname)
+    
+    res = requests.put(url, files=files, headers=head)
+    assert res.status_code == 401
+    
+    res = requests.head(url, headers=head)
+    assert res.status_code == 401
 
 if __name__ == "__main__":
     pytest.main(["./5_test.py"])

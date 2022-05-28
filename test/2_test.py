@@ -72,6 +72,13 @@ def test_bad_uuid():
     url = url[:-8] + '-' +url[-7:]
     res = s.post(url, json=body_email)
     assert res.status_code == 404
+    
+def test_nil_uuid():
+    s = log_in_session()
+    body_email = {"email": "t@t.tt"}
+    url = generate_url("00000000-0000-0000-0000-000000000000")
+    res = s.post(url, json=body_email)
+    assert res.status_code == 404
 
 def test_no_email():
     s = log_in_session()

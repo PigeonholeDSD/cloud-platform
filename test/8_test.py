@@ -4,6 +4,7 @@
 # @Author  : Xiaoquan Xu
 # @File    : 8_test.py
 
+# Abandoned
 # Test 8.Check the version of the device model on the server
 # `HEAD /device/<uuid>/model`
 
@@ -18,7 +19,13 @@ from names import *
 from simdev import *
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
+def test_get_algo():
+    url = API_BASE + "/models"
+    res = requests.get(url)
+    print(res)
+    assert 0
+    return res
+    
 def generate_url(idd=None):
     if idd == None:
         idd = uuid.uuid4()
@@ -34,6 +41,11 @@ def test_good_check_base_model():
     simd = SimDevice()
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
+    res = requests.get(generate_url(simd.id), headers=head)
+    assert "Last-Modified" not in res.headers
+    assert res.headers["Content-Length"][0] != '-'
+    assert res.status_code == 200
+    
     res = requests.head(generate_url(simd.id), headers=head)
     assert "Last-Modified" not in res.headers
     assert res.headers["Content-Length"][0] != '-'
@@ -75,7 +87,7 @@ def test_good_check_model():
     
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
-    res = requests.head(generate_url(simd.id), headers=head)
+    res = requests.get(generate_url(simd.id), headers=head)
     print(res.headers["Last-Modified"])
     print(time.strftime('%a, %d %b %Y %H', time.gmtime(time.time())))
     assert res.headers["Last-Modified"].find(time.strftime(\
