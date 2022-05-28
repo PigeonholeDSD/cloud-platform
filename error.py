@@ -22,7 +22,9 @@ class UnauthorizedError(DSDException):
 class ForbiddenError(DSDException):
     @staticmethod
     def handler(e):
-        return '', 403
+        return jsonify({
+            'error': str(e),
+        }), 403
 
 
 class BadSignatureError(DSDException):
