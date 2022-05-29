@@ -23,7 +23,7 @@ def get_algo(algo: str):
     path = (db.device.get(uuid.UUID(int=0)).model[algo]
         or algo_list[algo]['base'].replace('$ALGO', 'algo')
     )
-    return send_file(open(path), 'application/octet-stream')
+    return send_file(path, 'application/octet-stream')
 
 @bp.put('model/<string:algo>')
 @check(admin_only=True)
