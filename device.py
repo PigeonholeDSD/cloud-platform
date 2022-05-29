@@ -152,7 +152,8 @@ def put_model(devid: uuid.UUID, algo: str):
 @check()
 @validate_uuid()
 def delete_all_model(devid: uuid.UUID):
-    algo_list = json.load('algo/algo.json')
+    with open('algo/algo.json', 'r') as f:
+        algo_list = json.load(f)
     for algo in algo_list.keys():
         db.device.get(devid).model[algo] = None
     return '', 200
