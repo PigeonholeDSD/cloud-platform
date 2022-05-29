@@ -18,9 +18,8 @@ def get_model():
 @check()
 @validate_algo()
 def get_algo(algo: str):
-    algo_list = json.load('algo/algo.json')
-    if algo not in algo_list.keys():
-        raise error.NotFoundError('Algorithm not found.')
+    with open('algo/algo.json', 'r') as f:
+        algo_list = json.load(f)
     return send_file(open(algo_list[algo]['base']), 'application/octet-stream')
 
 @bp.put('model/<string:algo>')
