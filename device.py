@@ -115,8 +115,10 @@ def delete_calibration(devid: uuid.UUID):
 @validate_uuid()
 @validate_algo()
 def get_model(devid: uuid.UUID, algo: str):
+    with open('algo/algo.json', 'r') as f:
+        algo_list = json.load(f)
     model = db.device.get(devid).model[algo]
-    file = model or db.device.get(uuid.UUID(int=0)).model[algo]
+    file = model or algo_list[algo]['base'].replace('$ALGO', 'algo')
     response = make_response(send_file(file, 'application/octet-stream'), 200)
     response.headers['Signature'] = crypto.sign_file(file)
     if model:
