@@ -41,14 +41,14 @@ def test_good_check_base_model():
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
     res = requests.get(generate_url(simd.id), headers=head)
-    # assert "Last-Modified" not in res.headers
-    # assert res.headers["Content-Length"][0] != '-'
-    # assert res.status_code == 200
+    assert "Last-Modified" not in res.headers
+    assert res.headers["Content-Length"][0] != '-'
+    assert res.status_code == 200
     
     res = requests.head(generate_url(simd.id), headers=head)
-    # assert "Last-Modified" not in res.headers
-    # assert res.headers["Content-Length"][0] != '-'
-    # assert res.status_code == 200
+    assert "Last-Modified" not in res.headers
+    assert res.headers["Content-Length"][0] != '-'
+    assert res.status_code == 200
 
 def generate_file(name: str):
     with open(name, "w") as f:
@@ -87,11 +87,11 @@ def test_good_check_model():
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
     res = requests.get(generate_url(simd.id), headers=head)
-    # assert res.headers["Last-Modified"].find(time.strftime(\
-    #     '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
-    # assert res.content == b""
-    # assert res.status_code == 200
-    # assert res.headers["Content-Length"][0] != '-'
+    assert res.headers["Last-Modified"].find(time.strftime(\
+        '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
+    assert res.content == b""
+    assert res.status_code == 200
+    assert res.headers["Content-Length"][0] != '-'
 
 if __name__ == "__main__":
     pytest.main(["./8_test.py"])
