@@ -27,8 +27,16 @@ def __train(device: db.device.Device, algo_info: dict, stop: threading.Event) ->
     algo = algo_info['name']
     entry_point = algo_info['entry_point']['train']
     proc = subprocess.Popen(
-        [*entry_point, device.calibration or '',
-            new_model, device.model[algo] or db.device.get(uuid.UUID(int=0)).model[algo]],
+        [
+            *entry_point, 
+            device.calibration or '',
+            new_model, 
+            (
+                device.model[algo]
+                or db.device.get(uuid.UUID(int=0)).model[algo]
+                or algo_info['base'].replace('$ALGO', 'algo')
+            )
+        ],
         cwd='algo'
     )
     while not stop.is_set():
@@ -38,17 +46,17 @@ def __train(device: db.device.Device, algo_info: dict, stop: threading.Event) ->
         except subprocess.TimeoutExpired:
             pass
     else:
-        print(f'Terminating running train process of {device.id}')
+        print(f'Terminating running {algo} train process of {device.id}')
         while proc.poll() is None:
             proc.terminate()
             time.sleep(1)
             proc.kill()
     if proc.returncode == 0:
-        print(f'Finished training for {device.id}')
-        device.model = new_model
+        print(f'Finished training {algo} for {device.id}')
+        device.model[algo] = new_model
         threading.Thread(target=notify, args=(device,)).start()
     else:
-        print(f'Training for {device.id} failed returning {proc.returncode}')
+        print(f'Training {algo} for {device.id} failed returning {proc.returncode}')
     shutil.rmtree(os.path.dirname(new_model))
 
 

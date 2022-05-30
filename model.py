@@ -18,10 +18,12 @@ def get_model():
 @check()
 @validate_algo()
 def get_algo(algo: str):
-    algo_list = json.load('algo/algo.json')
-    if algo not in algo_list.keys():
-        raise error.NotFoundError('Algorithm not found.')
-    return send_file(open(algo_list[algo]['base']), 'application/octet-stream')
+    with open('algo/algo.json', 'r') as f:
+        algo_list = json.load(f)
+    path = (db.device.get(uuid.UUID(int=0)).model[algo]
+        or algo_list[algo]['base'].replace('$ALGO', 'algo')
+    )
+    return send_file(path, 'application/octet-stream')
 
 @bp.put('model/<string:algo>')
 @check(admin_only=True)
