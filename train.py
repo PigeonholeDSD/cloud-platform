@@ -25,10 +25,10 @@ def __train(device: db.device.Device, algo_info: dict, stop: threading.Event) ->
     print(f'Starting training for {device.id}')
     new_model = os.path.join(mkdtemp(), 'model')
     algo = algo_info['name']
-    entry_point = algo_info['entry_point']['train']
+    entrypoint = algo_info['entrypoint']['train']
     proc = subprocess.Popen(
         [
-            *entry_point, 
+            *entrypoint, 
             device.calibration or '',
             new_model, 
             (
@@ -80,6 +80,6 @@ def train(device: db.device.Device, algo: str) -> None:
     with open('algo/algo.json', 'r') as f:
         algo_list = json.load(f)
     algo_info = algo_list[algo]
-    for i in range(len(algo_info['entry_point']['train'])):
+    for i in range(len(algo_info['entrypoint']['train'])):
         algo_info['entrypoint']['train'][i] = algo_info['entrypoint']['train'][i].replace('$ALGO', 'algo')
     threading.Thread(target=_train, args=(device, algo_info,)).start()
