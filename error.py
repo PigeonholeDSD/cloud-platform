@@ -40,3 +40,10 @@ class NotFoundError(DSDException):
         return jsonify({
             'error': str(e)
         }), 404
+
+class CalibrationNotFoundError(DSDException):
+    @staticmethod
+    def handler(e):
+        return jsonify({
+            'error': 'Calibration not found'
+        }), 400
