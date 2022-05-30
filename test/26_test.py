@@ -54,62 +54,31 @@ def test_good_train():
     for k in range(len(names.ALGO)):
         global kALGO
         kALGO = k
-        s = log_in_session()
-        url = generate_url()
-        generate_file("f1")
-        files = {"model": ("file1", open("f1", "rb"),\
-            "application/octet-stream")}
-        res = s.post(url, files=files)
-        os.remove("f1")
-        assert res.status_code == 200
-
-def test_good_upload2():
-    s = log_in_session()
-    url = generate_url()
-    generate_file("f2")
-    files = {"model": ("file2", open("f2", "rb"))}
-    res = s.put(url, files=files)
-    os.remove("f2")
-    assert res.status_code == 200
-
-def test_bad_request():
-    s = log_in_session()
-    url = generate_url()
-    generate_file("bf")
-    files = {"files": ("bfile", open("bf", "rb"))}
-    res = s.put(url, files=files)
-    os.remove("bf")
-    assert res.status_code == 400
-    
-def test_bad_request2():
-    s = log_in_session()
-    url = generate_url()
-    generate_file("bf2")
-    files = {"model": ("bfile2", open("bf2", "rb"))}
-    res = s.put(url, data=files)
-    os.remove("bf2")
-    assert res.status_code == 400
-
-def test_device_try_upload():
-    for k in range(len(names.ALGO)):
-        global kALGO
-        kALGO = k
         simd = SimDevice()
         ts = requests.get(API_BASE + "/timestamp").text
-        head = {"Authorization": simd.ticket(ts)}
-        generate_file("tf")
-        files = {"model": ("file2", open("tf", "rb"))}
-        os.remove("tf")
-        res = requests.put(generate_url(simd.id), files=files, headers=head)
+        
+        s = log_in_session()
+        url = generate_url(simd.id)
+        res = s.post(url)
+        assert res.status_code == 400
+        
+        res = requests.post(url,
+            headers = {"Authorization": simd.ticket(ts)})
+        assert res.status_code == 400
+        
+        tname = "calibration.tgz"
+        files = {"calibration": ("c1", open(tname, "rb"),
+            "application/x-tar+gzip", {"Expires": "0"})}
+        head = {"Authorization": simd.ticket(ts),
+            "Signature": simd.sign_file(tname)}
+        
+        res = requests.put(API_BASE + "/device/" 
+            + str(simd.id) + "/calibration", files=files, headers=head)
         assert res.status_code == 200
-
-def test_device_try_upload_bad():
-    simd = SimDevice()
-    ts = requests.get(API_BASE + "/timestamp").text
-    head = {"Authorization": simd.ticket(ts)}
-    files = {}
-    res = requests.put(generate_url(simd.id), files=files, headers=head)
-    assert res.status_code == 403
+        
+        res = requests.post(url,
+            headers = head)
+        assert res.status_code == 200
     
 if __name__ == "__main__":
     pytest.main(["./26_test.py"])
