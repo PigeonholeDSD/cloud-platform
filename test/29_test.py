@@ -39,6 +39,7 @@ def test_refresh_models():
     
 def test_goodget_device():
     for k in range(len(names.ALGO)):
+        global kALGO
         kALGO = k
         simd = SimDevice()
         ts = requests.get(API_BASE + "/timestamp").text
@@ -57,6 +58,7 @@ def test_goodget_device():
         assert "Content-Length" in res.headers
 
 def test_good_get():
+    global kALGO
     kALGO = 0
     res = requests.get(generate_url())
     assert res.status_code == 200
@@ -64,6 +66,7 @@ def test_good_get():
 
 def test_good_get_admin():
     s = log_in_session()
+    global kALGO
     kALGO = 0
     res = s.get(generate_url())
     assert res.status_code == 200

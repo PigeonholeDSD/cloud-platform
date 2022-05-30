@@ -67,7 +67,7 @@ def test_good_update():
         kALGO = k
         res = s.get(generate_url())
         assert hash_tar(f"f{k}") == hash_content(res.content)
-        assert "Last-Modified" not in res.headers
+        assert "Last-Modified" in res.headers
         assert "Content-Length" in res.headers
         
         simd = SimDevice()
@@ -139,16 +139,16 @@ def test_device_try_upload():
         generate_file("tf")
         files = {"model": ("file2", open("tf", "rb"))}
         os.remove("tf")
-        res = requests.put(generate_url(simd.id), files=files, headers=head)
-        assert res.status_code == 403
+        res = requests.put(generate_url(), files=files, headers=head)
+        assert res.status_code == 401
 
 def test_device_try_upload_bad():
     simd = SimDevice()
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
     files = {}
-    res = requests.put(generate_url(simd.id), files=files, headers=head)
-    assert res.status_code == 403
+    res = requests.put(generate_url(), files=files, headers=head)
+    assert res.status_code == 401
     
 if __name__ == "__main__":
     pytest.main(["./30_test.py"])
