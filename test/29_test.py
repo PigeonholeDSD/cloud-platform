@@ -8,7 +8,6 @@
 # `GET /api/model/<algo>`
 
 import os
-import uuid
 import time
 import json
 import pytest
@@ -38,7 +37,7 @@ def test_refresh_models():
     names.ALGO = list(json.loads(res.text).keys())
     assert names.ALGO != []
     
-def test_good_device():
+def test_goodget_device():
     for k in range(len(names.ALGO)):
         kALGO = k
         simd = SimDevice()
@@ -46,65 +45,29 @@ def test_good_device():
         head = {"Authorization": simd.ticket(ts)}
         res = requests.get(generate_url(), headers=head)
         assert res.status_code == 200
-        assert "Last-Modified" not in res.headers
-        assert "Signature" in res.headers
-        assert "Content-Length" in res.headers
-
-def generate_file(name: str):
-    with open(name, "w") as f:
-        for _ in range(10):
-            f.write(str(random.randint(1,1000000))+"\n")
-
-def generate_tgz(name: str):
-    n_file = random.randint(1,5)
-    with tarfile.open(name, "w:gz") as ftar:
-        for i in range(n_file):
-            fname = name[:-4] + str(i) + ".csv"
-            generate_file(fname)
-            ftar.add(fname)
-            os.remove(fname)
-
-def hash_tar(name: str):
-    hash_tar = hash_file(name)
-    os.remove(name)
-    return hash_tar
-
-def hash_content(content):
-    with open("_tmp", "wb") as f:
-        f.write(content)
-    return hash_tar("_tmp")
-
-def test_good_get_after_upload():
-    for k in range(len(names.ALGO)):
-        kALGO = k
-        simd = SimDevice()
-        s = log_in_session()
-        url = API_BASE + "/device/" + str(simd.id) + "/model/" + names.ALGO[kALGO]
-        generate_tgz("t1.tgz")
-        files = {"model": ("f1.tgz", open("t1.tgz", "rb"))}
-        res = s.put(url, files=files)
-        h1 = hash_tar("t1.tgz")
-        
-        ts = requests.get(API_BASE + "/timestamp").text
-        head = {"Authorization": simd.ticket(ts)}
-        res = requests.get(API_BASE + "/device/" + str(simd.id) + "/model/"\
-            + names.ALGO[kALGO], headers=head)
-        assert res.status_code == 200
-        assert "Last-Modified" in res.headers
-        print(res.headers["Last-Modified"])
-        print(time.strftime('%a, %d %b %Y %H', time.gmtime(time.time())))
-        assert res.headers["Last-Modified"].find(time.strftime(\
-            '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
-        assert hash_content(res.content) == h1
-        assert "Signature" in res.headers
+        # assert "Last-Modified" not in res.headers
         assert "Content-Length" in res.headers
         
-        res = requests.get(generate_url(), headers=head)
+        res = requests.get(API_BASE + "/device/"
+            + str(simd.id) + "/model/" + names.ALGO[kALGO],
+            headers=head)
         assert res.status_code == 200
         assert "Last-Modified" not in res.headers
         assert "Signature" in res.headers
         assert "Content-Length" in res.headers
 
+def test_good_get():
+    kALGO = 0
+    res = requests.get(generate_url())
+    assert res.status_code == 200
+    assert "Content-Length" in res.headers
+
+def test_good_get_admin():
+    s = log_in_session()
+    kALGO = 0
+    res = s.get(generate_url())
+    assert res.status_code == 200
+    assert "Content-Length" in res.headers
 
 if __name__ == "__main__":
     pytest.main(["./29_test.py"])

@@ -8,7 +8,6 @@
 # `PUT /api/model/<algo>`
 
 import os
-import uuid
 import json
 import names
 import pytest
@@ -41,6 +40,11 @@ def generate_file(name: str):
         for _ in range(10):
             f.write(str(random.randint(1,1000000))+"\n")
 
+def hash_tar(name: str):
+    hash_tar = hash_file(name)
+    os.remove(name)
+    return hash_tar
+
 def hash_content(content):
     with open("_tmp", "wb") as f:
         f.write(content)
@@ -54,21 +58,47 @@ def test_good_update():
         s = log_in_session()
         url = generate_url()
         generate_file(f"f{k}")
-        files = {"model": ("file1", open(f"f{k}", "rb"),\
-            "multipart/form-data")}
+        files = {"model": ("file1", open(f"f{k}", "rb"))}
         res = s.put(url, files=files)
         assert res.status_code == 200
         
     for k in range(len(names.ALGO)):
-        kALGO = k
-        s = log_in_session()
-        url = generate_url()
-        generate_file(f"f{k}")
-        files = {"model": ("file1", open(f"f{k}", "rb"),\
-            "multipart/form-data")}
-        res = s.put(url, files=files)
+        res = s.get(generate_url())
+        assert hash_tar(f"f{k}") == hash_content(res.content)
+        # assert "Last-Modified" not in res.headers
+        assert "Content-Length" in res.headers
+        
+        simd = SimDevice()
+        url = generate_url(API_BASE + "/device/" + str(simd.id) + "/model/" + names.ALGO[k])
+        ts = requests.get(API_BASE + "/timestamp").text
+        head = {"Authorization": simd.ticket(ts)}
+        res = requests.get(url, headers=head)
         assert res.status_code == 200
-        os.remove(f"f{k}")
+        assert "Last-Modified"  not in res.headers
+        assert "Signature" in res.headers
+        assert "Content-Length" in res.headers
+
+def test_good_set():
+    kALGO = 0
+    s = log_in_session()
+    url = generate_url()
+    fname = "f1.233"
+    generate_file(fname)
+    files = {"model": ("file1", open(fname, "rb"))}
+    res = s.put(url, files=files)
+    h1 = hash_file(fname)
+    os.remove(fname)
+    assert res.status_code == 200
+    
+    simd = SimDevice()
+    ts = requests.get(API_BASE + "/timestamp").text
+    head = {"Authorization": simd.ticket(ts)}
+    res = requests.get(API_BASE + "/device/" + str(simd.id)
+        + "/model/" + names.ALGO[kALGO], headers=head)
+    assert "Last-Modified" not in res.headers
+    print(res.text)
+    assert hash_content(res.content) == h1
+    assert res.status_code == 200
 
 def test_good_upload2():
     s = log_in_session()
