@@ -54,6 +54,7 @@ def hash_content(content):
 
 def test_good_update():
     for k in range(len(names.ALGO)):
+        global kALGO
         kALGO = k
         s = log_in_session()
         url = generate_url()
@@ -63,13 +64,14 @@ def test_good_update():
         assert res.status_code == 200
         
     for k in range(len(names.ALGO)):
+        kALGO = k
         res = s.get(generate_url())
         assert hash_tar(f"f{k}") == hash_content(res.content)
-        # assert "Last-Modified" not in res.headers
+        assert "Last-Modified" not in res.headers
         assert "Content-Length" in res.headers
         
         simd = SimDevice()
-        url = generate_url(API_BASE + "/device/" + str(simd.id) + "/model/" + names.ALGO[k])
+        url = API_BASE + "/device/" + str(simd.id) + "/model/" + names.ALGO[k]
         ts = requests.get(API_BASE + "/timestamp").text
         head = {"Authorization": simd.ticket(ts)}
         res = requests.get(url, headers=head)
@@ -79,6 +81,7 @@ def test_good_update():
         assert "Content-Length" in res.headers
 
 def test_good_set():
+    global kALGO
     kALGO = 0
     s = log_in_session()
     url = generate_url()
@@ -96,7 +99,6 @@ def test_good_set():
     res = requests.get(API_BASE + "/device/" + str(simd.id)
         + "/model/" + names.ALGO[kALGO], headers=head)
     assert "Last-Modified" not in res.headers
-    print(res.text)
     assert hash_content(res.content) == h1
     assert res.status_code == 200
 
@@ -129,6 +131,7 @@ def test_bad_request2():
 
 def test_device_try_upload():
     for k in range(len(names.ALGO)):
+        global kALGO
         kALGO = k
         simd = SimDevice()
         ts = requests.get(API_BASE + "/timestamp").text
