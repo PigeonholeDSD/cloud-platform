@@ -62,6 +62,31 @@ def test_good_train():
         res = s.post(url)
         assert res.status_code == 400
         
+        tname = "calibration.tgz"
+        files = {"calibration": ("c1", open(tname, "rb"),
+            "application/x-tar+gzip", {"Expires": "0"})}
+        head = {"Authorization": simd.ticket(ts),
+            "Signature": simd.sign_file(tname)}
+        
+        res = requests.put(API_BASE + "/device/" 
+            + str(simd.id) + "/calibration", files=files, headers=head)
+        assert res.status_code == 200
+        
+        res = s.post(url)
+        assert res.status_code == 200
+
+def test_device():
+    for k in range(len(names.ALGO)):
+        global kALGO
+        kALGO = k
+        simd = SimDevice()
+        ts = requests.get(API_BASE + "/timestamp").text
+        
+        s = log_in_session()
+        url = generate_url(simd.id)
+        res = s.post(url)
+        assert res.status_code == 400
+        
         res = requests.post(url,
             headers = {"Authorization": simd.ticket(ts)})
         assert res.status_code == 400
@@ -79,6 +104,33 @@ def test_good_train():
         res = requests.post(url,
             headers = head)
         assert res.status_code == 200
+
+def test_train_continuously():
+    global kALGO
+    kALGO = 0
+    simd = SimDevice()
+    ts = requests.get(API_BASE + "/timestamp").text
     
+    s = log_in_session()
+    url = generate_url(simd.id)
+    res = s.post(url)
+    assert res.status_code == 400
+    
+    tname = "calibration.tgz"
+    files = {"calibration": ("c1", open(tname, "rb"),
+        "application/x-tar+gzip", {"Expires": "0"})}
+    head = {"Authorization": simd.ticket(ts),
+        "Signature": simd.sign_file(tname)}
+    
+    res = requests.put(API_BASE + "/device/" 
+        + str(simd.id) + "/calibration", files=files, headers=head)
+    assert res.status_code == 200
+    
+    res = s.post(url)
+    assert res.status_code == 200
+    
+    res = s.post(url)
+    assert res.status_code == 200
+
 if __name__ == "__main__":
     pytest.main(["./26_test.py"])
