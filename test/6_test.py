@@ -100,6 +100,25 @@ def test_signature_invalid():
     
     res = requests.get(url, headers=head)
     assert res.status_code == 403
+
+def test_device():
+    simd = SimDevice()
+    url = generate_url(simd.id)
+    ts = requests.get(API_BASE + "/timestamp").text
+    
+    tname = "t1.tgz"
+    generate_tgz(tname)
+    files = {"calibration": ("c1", open(tname, "rb"),\
+        "application/x-tar+gzip", {"Expires": "0"})}
+    head = {"Authorization": simd.ticket(ts),
+        "Signature": simd.sign_file(tname)}
+    os.remove(tname)
+    
+    res = requests.put(url, files=files, headers=head)
+    assert res.status_code == 200
+    
+    res = requests.get(url, headers=head)
+    assert res.status_code == 403
     
 def test_bad_request():
     s = log_in_session()
