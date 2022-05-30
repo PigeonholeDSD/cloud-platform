@@ -8,14 +8,12 @@ from util import *
 bp = Blueprint('model', __name__, url_prefix='/api')
 
 @bp.get('models')
-@check()
 def get_model():
     with open('algo/algo.json', 'r') as f:
         algo_list = json.load(f)
     return jsonify(algo_list), 200
 
 @bp.get('model/<string:algo>')
-@check()
 @validate_algo()
 def get_algo(algo: str):
     with open('algo/algo.json', 'r') as f:
