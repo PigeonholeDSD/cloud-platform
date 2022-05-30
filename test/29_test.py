@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# @Time    : 2022/05/30 17:30
+# @Time    : 2022/05/30 20:57
 # @Author  : Xiaoquan Xu
-# @File    : 27_test.py
+# @File    : 29_test.py
 
-# Test 27.Clear device model of a specific algorithm
-# `DELETE /device/<uuid>/model/<algo>`
+# Test 29.Acquire the base model of an algorithm
+# `GET /api/model/<algo>`
 
 import os
 import uuid
+import time
 import json
 import pytest
 import tarfile
@@ -22,10 +23,8 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 kALGO = -1
 
-def generate_url(idd=None):
-    if idd == None:
-        idd = uuid.uuid4()
-    return API_BASE + "/device/" + str(idd) + "/model/" + names.ALGO[kALGO]
+def generate_url():
+    return API_BASE + "/model/" + names.ALGO[kALGO]
 
 def log_in_session() -> requests.Session:
     s = requests.Session()
@@ -38,17 +37,18 @@ def test_refresh_models():
     assert res.status_code == 200
     names.ALGO = list(json.loads(res.text).keys())
     assert names.ALGO != []
-
-def test_delete_straightforward():
-    simd = SimDevice()
-    ts = requests.get(API_BASE + "/timestamp").text
-    head = {"Authorization": simd.ticket(ts)}
     
-    res = requests.delete(generate_url(simd.id), headers=head)
-    assert res.status_code == 200
-    
-    res = requests.delete(generate_url(simd.id), headers=head)
-    assert res.status_code == 200
+def test_good_device():
+    for k in range(len(names.ALGO)):
+        kALGO = k
+        simd = SimDevice()
+        ts = requests.get(API_BASE + "/timestamp").text
+        head = {"Authorization": simd.ticket(ts)}
+        res = requests.get(generate_url(), headers=head)
+        assert res.status_code == 200
+        assert "Last-Modified" not in res.headers
+        assert "Signature" in res.headers
+        assert "Content-Length" in res.headers
 
 def generate_file(name: str):
     with open(name, "w") as f:
@@ -74,32 +74,37 @@ def hash_content(content):
         f.write(content)
     return hash_tar("_tmp")
 
-def test_good_delete():
+def test_good_get_after_upload():
     for k in range(len(names.ALGO)):
         kALGO = k
         simd = SimDevice()
-        
         s = log_in_session()
-        url = generate_url(simd.id)
+        url = API_BASE + "/device/" + str(simd.id) + "/model/" + names.ALGO[kALGO]
         generate_tgz("t1.tgz")
-        files = {"model": ("f1.tgz", open("t1.tgz", "rb"),\
-            "application/octet-stream")}
+        files = {"model": ("f1.tgz", open("t1.tgz", "rb"))}
         res = s.put(url, files=files)
         h1 = hash_tar("t1.tgz")
         
         ts = requests.get(API_BASE + "/timestamp").text
         head = {"Authorization": simd.ticket(ts)}
-        res = requests.get(generate_url(simd.id), headers=head)
+        res = requests.get(API_BASE + "/device/" + str(simd.id) + "/model/"\
+            + names.ALGO[kALGO], headers=head)
         assert res.status_code == 200
-        assert hash_content(res.content) == h1
         assert "Last-Modified" in res.headers
+        print(res.headers["Last-Modified"])
+        print(time.strftime('%a, %d %b %Y %H', time.gmtime(time.time())))
+        assert res.headers["Last-Modified"].find(time.strftime(\
+            '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
+        assert hash_content(res.content) == h1
+        assert "Signature" in res.headers
+        assert "Content-Length" in res.headers
         
-        res = requests.delete(generate_url(simd.id), headers=head)
-        assert res.status_code == 200
-        
-        res = requests.head(generate_url(simd.id), headers=head)
+        res = requests.get(generate_url(), headers=head)
         assert res.status_code == 200
         assert "Last-Modified" not in res.headers
+        assert "Signature" in res.headers
+        assert "Content-Length" in res.headers
+
 
 if __name__ == "__main__":
-    pytest.main(["./27_test.py"])
+    pytest.main(["./29_test.py"])

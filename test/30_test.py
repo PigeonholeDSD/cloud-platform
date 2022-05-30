@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# @Time    : 2022/05/29 16:15
+# @Time    : 2022/05/30 21:18
 # @Author  : Xiaoquan Xu
-# @File    : 26_test.py
+# @File    : 30_test.py
 
-# Test 26.Train the device model of a specific algorithm
-# `POST /device/<uuid>/model/<algo>`
+# Test 30.Update the base model of an algorithm
+# `PUT /api/model/<algo>`
 
 import os
-import json
 import uuid
+import json
+import names
 import pytest
 import random
 import requests
-import names
 from names import *
 from simdev import *
 
@@ -21,10 +21,8 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 kALGO = -1
 
-def generate_url(idd=None):
-    if idd == None:
-        idd = uuid.uuid4()
-    return API_BASE + "/device/" + str(idd) + "/model/" + names.ALGO[kALGO]
+def generate_url():
+    return API_BASE + "/model/" + names.ALGO[kALGO]
 
 def log_in_session() -> requests.Session:
     s = requests.Session()
@@ -37,7 +35,7 @@ def test_refresh_models():
     assert res.status_code == 200
     names.ALGO = list(json.loads(res.text).keys())
     assert names.ALGO != []
-
+    
 def generate_file(name: str):
     with open(name, "w") as f:
         for _ in range(10):
@@ -50,17 +48,27 @@ def hash_content(content):
     os.remove("_tmp")
     return h
 
-def test_good_train():
+def test_good_update():
     for k in range(len(names.ALGO)):
         kALGO = k
         s = log_in_session()
         url = generate_url()
-        generate_file("f1")
-        files = {"model": ("file1", open("f1", "rb"),\
-            "application/octet-stream")}
-        res = s.post(url, files=files)
-        os.remove("f1")
+        generate_file(f"f{k}")
+        files = {"model": ("file1", open(f"f{k}", "rb"),\
+            "multipart/form-data")}
+        res = s.put(url, files=files)
         assert res.status_code == 200
+        
+    for k in range(len(names.ALGO)):
+        kALGO = k
+        s = log_in_session()
+        url = generate_url()
+        generate_file(f"f{k}")
+        files = {"model": ("file1", open(f"f{k}", "rb"),\
+            "multipart/form-data")}
+        res = s.put(url, files=files)
+        assert res.status_code == 200
+        os.remove(f"f{k}")
 
 def test_good_upload2():
     s = log_in_session()
@@ -99,7 +107,7 @@ def test_device_try_upload():
         files = {"model": ("file2", open("tf", "rb"))}
         os.remove("tf")
         res = requests.put(generate_url(simd.id), files=files, headers=head)
-        assert res.status_code == 200
+        assert res.status_code == 403
 
 def test_device_try_upload_bad():
     simd = SimDevice()
@@ -110,4 +118,4 @@ def test_device_try_upload_bad():
     assert res.status_code == 403
     
 if __name__ == "__main__":
-    pytest.main(["./26_test.py"])
+    pytest.main(["./30_test.py"])

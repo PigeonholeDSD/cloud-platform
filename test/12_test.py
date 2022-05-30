@@ -33,9 +33,7 @@ def log_in_session() -> requests.Session:
     return s
 
 def test_refresh_models():
-    s = log_in_session()
-    url = API_BASE + "/models"
-    res = s.get(url)
+    res = requests.get(API_BASE + "/models")
     assert res.status_code == 200
     names.ALGO = list(json.loads(res.text).keys())
     assert names.ALGO != []
