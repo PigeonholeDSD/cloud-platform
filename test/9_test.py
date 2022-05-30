@@ -10,33 +10,49 @@
 import os
 import uuid
 import time
+import json
 import pytest
 import tarfile
 import random
 import requests
+import names
 from names import *
 from simdev import *
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+kALGO = -1
+
 def generate_url(idd=None):
     if idd == None:
         idd = uuid.uuid4()
-    return API_BASE + "/device/" + str(idd) + "/model/" + ALGO[0]
+    return API_BASE + "/device/" + str(idd) + "/model/" + names.ALGO[kALGO]
 
 def log_in_session() -> requests.Session:
     s = requests.Session()
     body = {"username": USERNAME, "password": PASSWORD}
     s.post(API_BASE + "/session", json=body)
     return s
+
+def test_refresh_models():
+    s = log_in_session()
+    url = API_BASE + "/models"
+    res = s.get(url)
+    assert res.status_code == 200
+    names.ALGO = list(json.loads(res.text).keys())
+    assert names.ALGO != []
     
 def test_good_get_base_model():
-    simd = SimDevice()
-    ts = requests.get(API_BASE + "/timestamp").text
-    head = {"Authorization": simd.ticket(ts)}
-    res = requests.get(generate_url(simd.id), headers=head)
-    assert res.status_code == 200
-    assert "Last-Modified" not in res.headers
+    for k in range(len(names.ALGO)):
+        kALGO = k
+        simd = SimDevice()
+        ts = requests.get(API_BASE + "/timestamp").text
+        head = {"Authorization": simd.ticket(ts)}
+        res = requests.get(generate_url(simd.id), headers=head)
+        assert res.status_code == 200
+        assert "Last-Modified" not in res.headers
+        assert "Signature" in res.headers
+        assert "Content-Length" in res.headers
 
 def generate_file(name: str):
     with open(name, "w") as f:
@@ -63,44 +79,50 @@ def hash_content(content):
     return hash_tar("_tmp")
 
 def test_good_get_model():
-    simd = SimDevice()
-    s = log_in_session()
-    url = generate_url(simd.id)
-    generate_tgz("t1.tgz")
-    files = {"model": ("f1.tgz", open("t1.tgz", "rb"))}
-    res = s.put(url, files=files)
-    h1 = hash_tar("t1.tgz")
-    
-    ts = requests.get(API_BASE + "/timestamp").text
-    head = {"Authorization": simd.ticket(ts)}
-    res = requests.get(generate_url(simd.id), headers=head)
-    assert res.status_code == 200
-    print(res.headers)
-    print(res.headers["Last-Modified"])
-    print(time.strftime('%a, %d %b %Y %H', time.gmtime(time.time())))
-    assert res.headers["Last-Modified"].find(time.strftime(\
-        '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
-    assert hash_content(res.content) == h1
+    for k in range(len(names.ALGO)):
+        kALGO = k
+        simd = SimDevice()
+        s = log_in_session()
+        url = generate_url(simd.id)
+        generate_tgz("t1.tgz")
+        files = {"model": ("f1.tgz", open("t1.tgz", "rb"))}
+        res = s.put(url, files=files)
+        h1 = hash_tar("t1.tgz")
+        
+        ts = requests.get(API_BASE + "/timestamp").text
+        head = {"Authorization": simd.ticket(ts)}
+        res = requests.get(generate_url(simd.id), headers=head)
+        assert res.status_code == 200
+        assert "Last-Modified" in res.headers
+        print(res.headers["Last-Modified"])
+        print(time.strftime('%a, %d %b %Y %H', time.gmtime(time.time())))
+        assert res.headers["Last-Modified"].find(time.strftime(\
+            '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
+        assert hash_content(res.content) == h1
+        assert "Signature" in res.headers
+        assert "Content-Length" in res.headers
 
 def test_response():
-    simd = SimDevice()
-    s = log_in_session()
-    url = generate_url(simd.id)
-    generate_tgz("t1.tgz")
-    files = {"model": ("f1.tgz", open("t1.tgz", "rb"))}
-    res = s.put(url, files=files)
-    h1 = hash_tar("t1.tgz")
-    
-    ts = requests.get(API_BASE + "/timestamp").text
-    head = {"Authorization": simd.ticket(ts)}
-    res = requests.get(generate_url(simd.id), headers=head)
-    print(res.headers["Last-Modified"])
-    print(time.strftime('%a, %d %b %Y %H', time.gmtime(time.time())))
-    assert res.headers["Last-Modified"].find(time.strftime(\
-        '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
-    assert hash_content(res.content) == h1
-    assert simd.verify(h1, res.headers["Signature"])
-    assert res.headers["Content-Type"] == "application/octet-stream"
+    for k in range(len(names.ALGO)):
+        kALGO = k
+        simd = SimDevice()
+        s = log_in_session()
+        url = generate_url(simd.id)
+        generate_tgz("t1.tgz")
+        files = {"model": ("f1.tgz", open("t1.tgz", "rb"))}
+        res = s.put(url, files=files)
+        h1 = hash_tar("t1.tgz")
+        
+        ts = requests.get(API_BASE + "/timestamp").text
+        head = {"Authorization": simd.ticket(ts)}
+        res = requests.get(generate_url(simd.id), headers=head)
+        print(res.headers["Last-Modified"])
+        print(time.strftime('%a, %d %b %Y %H', time.gmtime(time.time())))
+        assert res.headers["Last-Modified"].find(time.strftime(\
+            '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
+        assert hash_content(res.content) == h1
+        assert simd.verify(h1, res.headers["Signature"])
+        assert res.headers["Content-Type"] == "application/octet-stream"
 
 if __name__ == "__main__":
     pytest.main(["./9_test.py"])
