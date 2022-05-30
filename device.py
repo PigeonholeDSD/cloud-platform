@@ -148,6 +148,17 @@ def put_model(devid: uuid.UUID, algo: str):
     shutil.rmtree(os.path.dirname(path))
     return '', 200
 
+@bp.post('<uuid:devid>/model/<string:algo>')
+@check()
+@validate_uuid()
+@validate_algo()
+def post_model(devid: uuid.UUID, algo: str):
+    device = db.device.get(devid)
+    if not device.calibration:
+        raise error.CalibrationNotFoundError()
+    train.train(device, algo)
+    return '', 200
+
 
 @bp.delete('<uuid:devid>/model')
 @check()
