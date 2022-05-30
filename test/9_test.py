@@ -5,7 +5,7 @@
 # @File    : 9_test.py
 
 # Test 9.Acquire the current version of the device model
-# `GET /device/<uuid>/model`
+# `GET /device/<uuid>/model/<algo>`
 
 import os
 import uuid
@@ -22,7 +22,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 def generate_url(idd=None):
     if idd == None:
         idd = uuid.uuid4()
-    return API_BASE + "/device/" + str(idd) + "/model"
+    return API_BASE + "/device/" + str(idd) + "/model/" + ALGO[0]
 
 def log_in_session() -> requests.Session:
     s = requests.Session()
@@ -35,8 +35,8 @@ def test_good_get_base_model():
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
     res = requests.get(generate_url(simd.id), headers=head)
-    assert "Last-Modified" not in res.headers
     assert res.status_code == 200
+    assert "Last-Modified" not in res.headers
 
 def generate_file(name: str):
     with open(name, "w") as f:
@@ -74,12 +74,13 @@ def test_good_get_model():
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
     res = requests.get(generate_url(simd.id), headers=head)
+    assert res.status_code == 200
+    print(res.headers)
     print(res.headers["Last-Modified"])
     print(time.strftime('%a, %d %b %Y %H', time.gmtime(time.time())))
     assert res.headers["Last-Modified"].find(time.strftime(\
         '%a, %d %b %Y %H', time.gmtime(time.time()))) == 0
     assert hash_content(res.content) == h1
-    assert res.status_code == 200
 
 def test_response():
     simd = SimDevice()

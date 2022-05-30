@@ -33,5 +33,14 @@ def test_good_get():
     assert res.status_code == 200
     assert list(json.loads(res.text).keys()) != []
 
+def test_get_device():
+    simd = SimDevice()
+    ts = requests.get(API_BASE + "/timestamp" ).text
+    head = { "Authorization": simd.ticket(ts)}
+    res = requests.get(API_BASE + "/models", headers=head)
+    assert res.status_code == 200
+    assert list(json.loads(res.text).keys()) != []
+    assert list(json.loads(res.text).keys()) == []
+
 if __name__ == "__main__":
     pytest.main(["./28_test.py"])

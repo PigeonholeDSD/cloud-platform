@@ -5,7 +5,7 @@
 # @File    : 10_test.py
 
 # Test 10.Clear device model from the cloud
-# `DELETE /device/<uuid>/model`
+# `DELETE /device/<uuid>/model/<algo>`
 
 import os
 import uuid

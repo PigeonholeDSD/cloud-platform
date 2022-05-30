@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# @Time    : 2022/05/03 22:49
+# @Time    : 2022/05/29 16:15
 # @Author  : Xiaoquan Xu
-# @File    : 12_test.py
+# @File    : 26_test.py
 
-# Test 12.Upload a new model to the cloud
-# `PUT /device/<uuid>/model/<algo>`
+# Test 26.Train the device model of a specific algorithm
+# `POST /device/<uuid>/model/<algo>`
 
 import os
 import uuid
@@ -45,7 +45,7 @@ def test_good_upload():
     url = generate_url()
     generate_file("f1")
     files = {"model": ("file1", open("f1", "rb"),\
-        "multipart/form-data")}
+        "application/octet-stream")}
     res = s.put(url, files=files)
     os.remove("f1")
     assert res.status_code == 200
@@ -96,4 +96,4 @@ def test_device_try_upload_bad():
     assert res.status_code == 403
     
 if __name__ == "__main__":
-    pytest.main(["./12_test.py"])
+    pytest.main(["./26_test.py"])
