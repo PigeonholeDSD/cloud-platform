@@ -5,14 +5,16 @@
 # @File    : 10_test.py
 
 # Test 10.Clear device model from the cloud
-# `DELETE /device/<uuid>/model/<algo>`
+# `DELETE /device/<uuid>/model`
 
 import os
 import uuid
+import json
 import pytest
 import tarfile
 import random
 import requests
+import names
 from names import *
 from simdev import *
 
@@ -21,23 +23,31 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 def generate_url(idd=None):
     if idd == None:
         idd = uuid.uuid4()
-    return API_BASE + "/device/" + str(idd) + "/model"
+    return API_BASE + "/device/" + str(idd) + "/model/"
 
 def log_in_session() -> requests.Session:
     s = requests.Session()
     body = {"username": USERNAME, "password": PASSWORD}
     s.post(API_BASE + "/session", json=body)
     return s
-    
+
+def test_refresh_models():
+    s = log_in_session()
+    url = API_BASE + "/models"
+    res = s.get(url)
+    assert res.status_code == 200
+    names.ALGO = list(json.loads(res.text).keys())
+    assert names.ALGO != []
+
 def test_delete_straightforward():
     simd = SimDevice()
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
-    
-    res = requests.delete(generate_url(simd.id), headers=head)
+    url = generate_url(simd.id)[:-1]
+    res = requests.delete(url, headers=head)
     assert res.status_code == 200
     
-    res = requests.delete(generate_url(simd.id), headers=head)
+    res = requests.delete(url, headers=head)
     assert res.status_code == 200
 
 def generate_file(name: str):
@@ -72,20 +82,27 @@ def test_good_delete():
     generate_tgz("t1.tgz")
     files = {"model": ("f1.tgz", open("t1.tgz", "rb"),\
         "application/octet-stream")}
-    res = s.put(url, files=files)
+    res = s.put(url + ALGO[0], files=files)
     h1 = hash_tar("t1.tgz")
     
     ts = requests.get(API_BASE + "/timestamp").text
     head = {"Authorization": simd.ticket(ts)}
-    res = requests.get(generate_url(simd.id), headers=head)
+    res = requests.get(url + ALGO[0], headers=head)
     assert res.status_code == 200
     assert hash_content(res.content) == h1
     assert "Last-Modified" in res.headers
     
-    res = requests.delete(generate_url(simd.id), headers=head)
+    res = requests.get(url + ALGO[1], headers=head)
+    assert res.status_code == 200
+    assert "Last-Modified" not in res.headers
+    
+    res = requests.get(url + ALGO[0][1:], headers=head)
+    assert res.status_code == 404
+    
+    res = requests.delete(url[:-1], headers=head)
     assert res.status_code == 200
     
-    res = requests.head(generate_url(simd.id), headers=head)
+    res = requests.get(url + ALGO[0], headers=head)
     assert res.status_code == 200
     assert "Last-Modified" not in res.headers
 
