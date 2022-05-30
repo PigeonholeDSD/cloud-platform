@@ -142,6 +142,7 @@ def put_model(devid: uuid.UUID, algo: str):
     if not file:
         raise error.APISyntaxError('No file uploaded')
     path = os.path.join(mkdtemp(), 'model')
+    print(path)
     file.save(path)
     db.device.get(devid).model[algo] = path
     shutil.rmtree(os.path.dirname(path))
