@@ -9,6 +9,8 @@
 
 import os
 import uuid
+import json
+import names
 import pytest
 import random
 import requests
@@ -17,16 +19,26 @@ from simdev import *
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+kALGO = -1
+
 def generate_url(idd=None):
     if idd == None:
         idd = uuid.uuid4()
-    return API_BASE + "/device/" + str(idd) + "/model/" + ALGO[0]
+    return API_BASE + "/device/" + str(idd) + "/model/" + names.ALGO[kALGO]
 
 def log_in_session() -> requests.Session:
     s = requests.Session()
     body = {"username": USERNAME, "password": PASSWORD}
     s.post(API_BASE + "/session", json=body)
     return s
+
+def test_refresh_models():
+    s = log_in_session()
+    url = API_BASE + "/models"
+    res = s.get(url)
+    assert res.status_code == 200
+    names.ALGO = list(json.loads(res.text).keys())
+    assert names.ALGO != []
     
 def generate_file(name: str):
     with open(name, "w") as f:
@@ -41,14 +53,16 @@ def hash_content(content):
     return h
 
 def test_good_upload():
-    s = log_in_session()
-    url = generate_url()
-    generate_file("f1")
-    files = {"model": ("file1", open("f1", "rb"),\
-        "multipart/form-data")}
-    res = s.put(url, files=files)
-    os.remove("f1")
-    assert res.status_code == 200
+    for k in range(len(names.ALGO)):
+        kALGO = k
+        s = log_in_session()
+        url = generate_url()
+        generate_file("f1")
+        files = {"model": ("file1", open("f1", "rb"),\
+            "multipart/form-data")}
+        res = s.put(url, files=files)
+        os.remove("f1")
+        assert res.status_code == 200
 
 def test_good_upload2():
     s = log_in_session()
@@ -78,14 +92,16 @@ def test_bad_request2():
     assert res.status_code == 400
 
 def test_device_try_upload():
-    simd = SimDevice()
-    ts = requests.get(API_BASE + "/timestamp").text
-    head = {"Authorization": simd.ticket(ts)}
-    generate_file("tf")
-    files = {"model": ("file2", open("tf", "rb"))}
-    os.remove("tf")
-    res = requests.put(generate_url(simd.id), files=files, headers=head)
-    assert res.status_code == 403
+    for k in range(len(names.ALGO)):
+        kALGO = k
+        simd = SimDevice()
+        ts = requests.get(API_BASE + "/timestamp").text
+        head = {"Authorization": simd.ticket(ts)}
+        generate_file("tf")
+        files = {"model": ("file2", open("tf", "rb"))}
+        os.remove("tf")
+        res = requests.put(generate_url(simd.id), files=files, headers=head)
+        assert res.status_code == 403
 
 def test_device_try_upload_bad():
     simd = SimDevice()
