@@ -76,6 +76,7 @@ def hash_content(content):
 
 def test_good_delete():
     for k in range(len(names.ALGO)):
+        global kALGO
         kALGO = k
         simd = SimDevice()
         

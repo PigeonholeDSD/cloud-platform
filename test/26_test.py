@@ -52,6 +52,7 @@ def hash_content(content):
 
 def test_good_train():
     for k in range(len(names.ALGO)):
+        global kALGO
         kALGO = k
         s = log_in_session()
         url = generate_url()
@@ -91,6 +92,7 @@ def test_bad_request2():
 
 def test_device_try_upload():
     for k in range(len(names.ALGO)):
+        global kALGO
         kALGO = k
         simd = SimDevice()
         ts = requests.get(API_BASE + "/timestamp").text

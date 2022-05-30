@@ -42,6 +42,7 @@ def test_refresh_models():
     
 def test_good_get_base_model():
     for k in range(len(names.ALGO)):
+        global kALGO
         kALGO = k
         simd = SimDevice()
         ts = requests.get(API_BASE + "/timestamp").text
@@ -78,6 +79,7 @@ def hash_content(content):
 
 def test_good_get_model():
     for k in range(len(names.ALGO)):
+        global kALGO
         kALGO = k
         simd = SimDevice()
         s = log_in_session()
@@ -102,6 +104,7 @@ def test_good_get_model():
 
 def test_response():
     for k in range(len(names.ALGO)):
+        global kALGO
         kALGO = k
         simd = SimDevice()
         s = log_in_session()
