@@ -20,8 +20,10 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 kALGO = -1
 
-def generate_url():
-    return API_BASE + "/model/" + names.ALGO[kALGO]
+def generate_url(idd=None):
+    if idd == None:
+        idd = uuid.uuid4()
+    return API_BASE + "/device/" + str(idd) + "/model/" + names.ALGO[kALGO]
 
 def log_in_session() -> requests.Session:
     s = requests.Session()
@@ -52,35 +54,25 @@ def hash_content(content):
     os.remove("_tmp")
     return h
 
-def test_good_update():
+def test_good_upload():
     for k in range(len(names.ALGO)):
         global kALGO
         kALGO = k
         s = log_in_session()
         url = generate_url()
-        generate_file(f"f{k}")
-        files = {"model": ("file1", open(f"f{k}", "rb"))}
+        res = s.post(url)
+        assert res.status_code == 400
+        
+        generate_file("f1")
+        files = {"model": ("file1", open("f1", "rb"))}
         res = s.put(url, files=files)
+        os.remove("f1")
         assert res.status_code == 200
         
-    for k in range(len(names.ALGO)):
-        kALGO = k
-        res = s.get(generate_url())
-        assert hash_tar(f"f{k}") == hash_content(res.content)
-        assert "Last-Modified" in res.headers
-        assert "Content-Length" in res.headers
-        
-        simd = SimDevice()
-        url = API_BASE + "/device/" + str(simd.id) + "/model/" + names.ALGO[k]
-        ts = requests.get(API_BASE + "/timestamp").text
-        head = {"Authorization": simd.ticket(ts)}
-        res = requests.get(url, headers=head)
+        res = s.post(url)
         assert res.status_code == 200
-        assert "Last-Modified"  not in res.headers
-        assert "Signature" in res.headers
-        assert "Content-Length" in res.headers
 
-def test_good_set():
+def test_good_train():
     global kALGO
     kALGO = 0
     s = log_in_session()
