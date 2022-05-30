@@ -80,6 +80,5 @@ def train(device: db.device.Device, algo: str) -> None:
     with open('algo/algo.json', 'r') as f:
         algo_list = json.load(f)
     algo_info = algo_list[algo]
-    for i in range(len(algo_info['entrypoint']['train'])):
-        algo_info['entrypoint']['train'][i] = algo_info['entrypoint']['train'][i].replace('$ALGO', 'algo')
+    algo_info['entrypoint']['train'][2] = os.path.abspath(algo_info['entrypoint']['train'][2].replace('$ALGO', 'algo'))
     threading.Thread(target=_train, args=(device, algo_info,)).start()
