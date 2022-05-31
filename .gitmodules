@@ -1,7 +1,7 @@
 [submodule "db"]
 	path = db
-	url = https://liyu.utad.pt/happy-family/db.git
+	url = https://github.com/dsd-db/db.git
 	branch = main
 [submodule "algo"]
 	path = algo
-	url = https://liyu.utad.pt/guosiqi/furia.git
+	url = https://github.com/PenGuln/furia.git
