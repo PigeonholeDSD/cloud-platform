@@ -1,0 +1,22 @@
+name: Build and Publish Docker Image
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Build Docker image
+        run: docker build -t pigeonhole .
+
+      - name: Publish image
+        run: |
+          echo "${{ github.token }}" | docker login ghcr.io -u $ --password-stdin
+          docker tag pigeonhole ghcr.io/pigeonholedsd/pigeonhole:latest
+          docker push ghcr.io/pigeonholedsd/pigeonhole:latest
