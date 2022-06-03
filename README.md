@@ -15,9 +15,8 @@ Run the following command to install the dependencies:
 ```
 git clone https://github.com/PigeonholeDSD/cloud-platform.git
 cd cloud-platform/
-pip install -r requirements.txt
 git submodule update --init
-pip install -r algo/requirements.txt
+find . -name requirements.txt -exec pip install -r {} \;
 ```
 
 Because we use submodule to manage database and algorithm module, if there're new commits, sync and commit with:
